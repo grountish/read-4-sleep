@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Read for Sleep</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #2a3444;
+      --accent: #7c8cf8;
+      --accent-h: #9ba8ff;
+      --text: #cdd1e0;
+      --muted: #6e7b94;
+      --danger: #f87171;
+      --success: #6ee7b7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    header p {
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .moon {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 740px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    textarea {
+      width: 100%;
+      height: 280px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      padding: 1rem;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+    }
+
+    textarea::placeholder {
+      color: var(--muted);
+    }
+
+    /* Stats row under textarea */
+    .text-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .est-duration {
+      font-weight: 600;
+      color: var(--accent);
+      transition: opacity 0.2s;
+    }
+
+    .est-duration.hidden {
+      opacity: 0;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.9rem;
+      padding: 0.55rem 0.75rem;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    select:focus {
+      border-color: var(--accent);
+    }
+
+    .speed-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .speed-val {
+      font-size: 0.85rem;
+      color: var(--accent);
+      min-width: 2.5rem;
+      text-align: right;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.85rem 1.5rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 1.5rem;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-h);
+    }
+
+    .btn-primary:disabled {
+      background: var(--border);
+      color: var(--muted);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Progress */
+    .progress-wrap {
+      display: none;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-top: 1.25rem;
+    }
+
+    .progress-wrap.visible {
+      display: flex;
+    }
+
+    .progress-bar-bg {
+      background: var(--bg);
+      border-radius: 99px;
+      height: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    .progress-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 1.2s infinite;
+      margin-right: 0.35rem;
+      vertical-align: middle;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    /* Current player */
+    .player-card {
+      display: none;
+    }
+
+    .player-card.visible {
+      display: block;
+    }
+
+    .player-card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+
+    audio {
+      width: 100%;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 1rem;
+      padding: 0.55rem 1.1rem;
+      background: transparent;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      color: var(--accent);
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .download-btn:hover {
+      background: rgba(124, 140, 248, 0.12);
+    }
+
+    /* Error */
+    .error-msg {
+      display: none;
+      color: var(--danger);
+      font-size: 0.88rem;
+      margin-top: 0.75rem;
+      padding: 0.65rem 0.9rem;
+      background: rgba(248, 113, 113, 0.08);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+      border-radius: 8px;
+    }
+
+    .error-msg.visible {
+      display: block;
+    }
+
+    .tip {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+
+    /* Library */
+    .library-card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+
+    .library-empty {
+      font-size: 0.88rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .lib-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .lib-item:last-child {
+      border-bottom: none;
+    }
+
+    .lib-play {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      transition: background 0.15s, transform 0.1s;
+      color: #fff;
+    }
+
+    .lib-play:hover {
+      background: var(--accent-h);
+    }
+
+    .lib-play:active {
+      transform: scale(0.93);
+    }
+
+    .lib-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .lib-title {
+      font-size: 0.9rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lib-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+
+    .lib-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .lib-dl,
+    .lib-del {
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      cursor: pointer;
+      background: transparent;
+      transition: background 0.15s, border-color 0.15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .lib-dl {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .lib-dl:hover {
+      background: rgba(124, 140, 248, 0.1);
+    }
+
+    .lib-del {
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .lib-del:hover {
+      background: rgba(248, 113, 113, 0.1);
+    }
+
+    /* Ambient mixer */
+    .mixer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .mixer-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .mixer-toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .mixer-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .mixer-toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 99px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .mixer-toggle input:checked+.mixer-toggle-track {
+      background: var(--accent);
+    }
+
+    .mixer-toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      pointer-events: none;
+    }
+
+    .mixer-toggle input:checked~.mixer-toggle-thumb {
+      transform: translateX(18px);
+    }
+
+    .sound-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .sound-row {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+
+    .sound-row.active {
+      opacity: 1;
+    }
+
+    .sound-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      width: 1.5rem;
+      text-align: center;
+    }
+
+    .sound-name {
+      font-size: 0.85rem;
+      color: var(--text);
+      min-width: 90px;
+      flex-shrink: 0;
+    }
+
+    .sound-vol {
+      flex: 1;
+      accent-color: var(--accent);
+      cursor: pointer;
+      height: 4px;
+    }
+
+    .sound-vol:disabled {
+      cursor: default;
+    }
+
+    .sound-vol-val {
+      font-size: 0.78rem;
+      color: var(--muted);
+      min-width: 2.8rem;
+      text-align: right;
+    }
+
+    @media (max-width: 520px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .lib-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <span class="moon">🌙</span>
+    <h1>Read for Sleep</h1>
+    <p>Paste any text — get a calm audio to drift off to</p>
+  </header>
+
+  <!-- Input card -->
+  <div class="card">
+    <label for="textInput">Your text</label>
+    <textarea id="textInput"
+      placeholder="Paste your article, story, meditation script, or anything you want read to you while falling asleep..."></textarea>
+    <div class="text-stats">
+      <span><span id="wordCount">0</span> words · <span id="charCount">0</span> / 200,000 chars</span>
+      <span class="est-duration hidden" id="estDuration"></span>
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <label for="voiceSelect">Voice</label>
+        <select id="voiceSelect"></select>
+      </div>
+      <div class="control-group">
+        <label>Speed <small style="text-transform:none;font-size:0.75rem;color:var(--muted)">(slower = more
+            relaxing)</small></label>
+        <div class="speed-row">
+          <input type="range" id="speedRange" min="0.5" max="1.2" step="0.05" value="0.8" />
+          <span class="speed-val" id="speedVal">0.8×</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="generateBtn" onclick="startGeneration()">
+      ✨ Generate Sleep Audio
+    </button>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-label">
+        <span><span class="status-dot" id="statusDot"></span><span id="statusText">Generating audio…</span></span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- Current player -->
+  <div class="card player-card" id="playerCard">
+    <h2>🎧 Your sleep audio is ready</h2>
+    <audio id="audioPlayer" controls></audio>
+    <br />
+    <a class="download-btn" id="downloadLink" download>⬇ Download WAV</a>
+  </div>
+
+
+
+  <!-- Ambient mixer -->
+  <div class="card" id="mixerCard">
+    <div class="mixer-header">
+      <h2>🌿 Ambient sounds</h2>
+      <label class="mixer-toggle" title="Enable ambient sounds">
+        <input type="checkbox" id="mixerEnabled" onchange="onMixerToggle()" />
+        <span class="mixer-toggle-track"></span>
+        <span class="mixer-toggle-thumb"></span>
+      </label>
+    </div>
+    <div class="sound-rows" id="soundRows">
+      <p class="library-empty">Loading sounds…</p>
+    </div>
+  </div>
+
+  <!-- Library -->
+  <div class="card library-card" id="libraryCard">
+    <h2>📚 Previous recordings</h2>
+    <div id="libraryList">
+      <p class="library-empty">No recordings yet.</p>
+    </div>
+  </div>
+
+  <script>
+    const textInput = document.getElementById("textInput");
+    const wordCount = document.getElementById("wordCount");
+    const charCount = document.getElementById("charCount");
+    const estDuration = document.getElementById("estDuration");
+    const voiceSelect = document.getElementById("voiceSelect");
+    const speedRange = document.getElementById("speedRange");
+    const speedVal = document.getElementById("speedVal");
+    const generateBtn = document.getElementById("generateBtn");
+    const progressWrap = document.getElementById("progressWrap");
+    const progressBar = document.getElementById("progressBar");
+    const progressPct = document.getElementById("progressPct");
+    const statusText = document.getElementById("statusText");
+    const statusDot = document.getElementById("statusDot");
+    const errorMsg = document.getElementById("errorMsg");
+    const playerCard = document.getElementById("playerCard");
+    const audioPlayer = document.getElementById("audioPlayer");
+    const downloadLink = document.getElementById("downloadLink");
+    const libraryList = document.getElementById("libraryList");
+
+    let pollTimer = null;
+
+    // ── Text stats ──────────────────────────────────────────────────────────────
+
+    // Average spoken words per minute at speed 1.0 (natural reading pace ~150 wpm)
+    const BASE_WPM = 150;
+
+    function updateStats() {
+      const text = textInput.value;
+      const chars = text.length;
+      const words = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+      const speed = parseFloat(speedRange.value);
+
+      charCount.textContent = chars.toLocaleString();
+      wordCount.textContent = words.toLocaleString();
+
+      if (words > 0) {
+        const mins = words / (BASE_WPM * speed);
+        estDuration.textContent = "≈ " + formatDuration(Math.round(mins * 60));
+        estDuration.classList.remove("hidden");
+      } else {
+        estDuration.classList.add("hidden");
+      }
+    }
+
+    textInput.addEventListener("input", updateStats);
+    speedRange.addEventListener("input", () => {
+      speedVal.textContent = parseFloat(speedRange.value).toFixed(2) + "×";
+      updateStats();
+    });
+
+    // ── Voices ──────────────────────────────────────────────────────────────────
+
+    fetch("/api/voices")
+      .then(r => r.json())
+      .then(voices => {
+        const groups = {};
+        voices.forEach(v => {
+          if (!groups[v.lang]) groups[v.lang] = [];
+          groups[v.lang].push(v);
+        });
+        Object.entries(groups).forEach(([lang, list]) => {
+          const og = document.createElement("optgroup");
+          og.label = lang;
+          list.forEach(v => {
+            const opt = document.createElement("option");
+            opt.value = v.id;
+            opt.textContent = v.name + (v.recommended ? " ⭐" : "");
+            if (v.recommended) opt.selected = true;
+            og.appendChild(opt);
+          });
+          voiceSelect.appendChild(og);
+        });
+      });
+
+    // ── Helpers ─────────────────────────────────────────────────────────────────
+
+    function formatDuration(secs) {
+      const h = Math.floor(secs / 3600);
+      const m = Math.floor((secs % 3600) / 60);
+      const s = secs % 60;
+      if (h > 0) return `${h}h ${m}m`;
+      if (m > 0) return `${m}m ${s}s`;
+      return `${s}s`;
+    }
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.classList.add("visible");
+    }
+    function clearError() {
+      errorMsg.classList.remove("visible");
+      errorMsg.textContent = "";
+    }
+    function setProgress(pct, label) {
+      progressBar.style.width = pct + "%";
+      progressPct.textContent = pct + "%";
+      if (label) statusText.textContent = label;
+    }
+
+    // ── Generation ──────────────────────────────────────────────────────────────
+
+    function startGeneration() {
+      const text = textInput.value.trim();
+      if (!text) { showError("Please paste some text first."); return; }
+      if (text.length > 200000) { showError("Text is too long (max 200,000 chars)."); return; }
+
+      clearError();
+      generateBtn.disabled = true;
+      progressWrap.classList.add("visible");
+      playerCard.classList.remove("visible");
+      statusDot.style.animation = "";
+      statusDot.style.background = "";
+      setProgress(0, "Sending text…");
+
+      fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text,
+          voice: voiceSelect.value,
+          speed: parseFloat(speedRange.value),
+        }),
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) { handleError(data.error); return; }
+          setProgress(2, "Model loading…");
+          pollStatus(data.job_id);
+        })
+        .catch(e => handleError(e.message));
+    }
+
+    function pollStatus(jobId) {
+      pollTimer = setInterval(() => {
+        fetch(`/api/status/${jobId}`)
+          .then(r => r.json())
+          .then(job => {
+            if (job.error) { handleError(job.error); return; }
+
+            if (job.status === "processing") {
+              const pct = Math.max(2, job.progress);
+              const label = pct < 10 ? "Loading Kokoro model…"
+                : pct < 95 ? `Synthesizing audio… (${pct}%)`
+                  : "Finalizing…";
+              setProgress(pct, label);
+            }
+
+            if (job.status === "done") {
+              clearInterval(pollTimer);
+              setProgress(100, "Done!");
+              statusDot.style.animation = "none";
+              statusDot.style.background = "var(--success)";
+
+              const audioUrl = `/api/audio/${job.filename}`;
+              audioPlayer.src = audioUrl;
+              downloadLink.href = audioUrl;
+              downloadLink.download = "sleep-audio.wav";
+              playerCard.classList.add("visible");
+              generateBtn.disabled = false;
+              audioPlayer.play().catch(() => { });
+              loadLibrary();
+            }
+
+            if (job.status === "error") {
+              clearInterval(pollTimer);
+              handleError(job.error || "Unknown error during generation.");
+            }
+          })
+          .catch(e => { clearInterval(pollTimer); handleError(e.message); });
+      }, 1500);
+    }
+
+    function handleError(msg) {
+      clearInterval(pollTimer);
+      progressWrap.classList.remove("visible");
+      generateBtn.disabled = false;
+      showError("Error: " + msg);
+    }
+
+    // ── Library ─────────────────────────────────────────────────────────────────
+
+    function loadLibrary() {
+      fetch("/api/library")
+        .then(r => r.json())
+        .then(items => {
+          if (!items.length) {
+            libraryList.innerHTML = '<p class="library-empty">No recordings yet.</p>';
+            return;
+          }
+
+          libraryList.innerHTML = "";
+          items.forEach(item => {
+            const audioUrl = `/api/audio/${item.filename}`;
+            const date = new Date(item.created_at * 1000).toLocaleDateString(undefined, {
+              month: "short", day: "numeric", year: "numeric",
+            });
+
+            const row = document.createElement("div");
+            row.className = "lib-item";
+            row.dataset.filename = item.filename;
+            row.innerHTML = `
+            <button class="lib-play" title="Play" onclick="playLibItem('${audioUrl}', this)">▶</button>
+            <div class="lib-info">
+              <div class="lib-title">${escHtml(item.title)}</div>
+              <div class="lib-meta">${formatDuration(item.duration)} · ${escHtml(item.voice)} · ${date}</div>
+            </div>
+            <div class="lib-actions">
+              <a class="lib-dl" href="${audioUrl}" download="sleep-audio.wav" title="Download">⬇</a>
+              <button class="lib-del" title="Delete" onclick="deleteItem('${item.filename}', this)">🗑</button>
+            </div>
+          `;
+            libraryList.appendChild(row);
+          });
+        });
+    }
+
+    function playLibItem(url, btn) {
+      // Reset all play buttons
+      document.querySelectorAll(".lib-play").forEach(b => b.textContent = "▶");
+      audioPlayer.src = url;
+      downloadLink.href = url;
+      downloadLink.download = "sleep-audio.wav";
+      playerCard.classList.add("visible");
+      audioPlayer.play().catch(() => { });
+      btn.textContent = "■";
+      audioPlayer.onended = () => { btn.textContent = "▶"; };
+    }
+
+    function deleteItem(filename, btn) {
+      if (!confirm("Delete this recording?")) return;
+      btn.disabled = true;
+      fetch(`/api/audio/${filename}`, { method: "DELETE" })
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) { alert(data.error); btn.disabled = false; return; }
+          const row = btn.closest(".lib-item");
+          row.style.transition = "opacity 0.3s";
+          row.style.opacity = "0";
+          setTimeout(() => { row.remove(); checkEmpty(); }, 300);
+        })
+        .catch(() => { btn.disabled = false; alert("Delete failed."); });
+    }
+
+    function checkEmpty() {
+      if (!libraryList.querySelector(".lib-item")) {
+        libraryList.innerHTML = '<p class="library-empty">No recordings yet.</p>';
+      }
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    // Load library on page open
+    loadLibrary();
+
+    // ── Ambient mixer ────────────────────────────────────────────────────────────
+
+    // {filename → {audio: HTMLAudioElement, gainNode: GainNode, sourceNode: MediaElementSourceNode}}
+    const ambientTracks = {};
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+
+    // Friendly display names and icons derived from filename
+    function soundMeta(name) {
+      const lower = name.toLowerCase();
+      if (lower.startsWith("fire")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🔥" };
+      if (lower.startsWith("rain")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🌧️" };
+      if (lower.startsWith("wind")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "💨" };
+      if (lower.startsWith("ocean")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🌊" };
+      if (lower.startsWith("bird")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🐦" };
+      return { label: name, icon: "🎵" };
+    }
+
+    function loadSounds() {
+      fetch("/api/sounds")
+        .then(r => r.json())
+        .then(sounds => {
+          const container = document.getElementById("soundRows");
+          if (!sounds.length) {
+            container.innerHTML = '<p class="library-empty">No sounds found in /sounds folder.</p>';
+            return;
+          }
+          container.innerHTML = "";
+          sounds.forEach(s => {
+            const { label, icon } = soundMeta(s.name);
+            const row = document.createElement("div");
+            row.className = "sound-row";
+            row.id = `srow-${s.filename}`;
+            row.innerHTML = `
+            <span class="sound-icon">${icon}</span>
+            <span class="sound-name">${escHtml(label)}</span>
+            <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="0.3"
+              disabled
+              oninput="onVolumeChange('${s.filename}', this.value)"
+              title="Volume" />
+            <span class="sound-vol-val" id="vol-${s.filename}">30%</span>
+          `;
+            container.appendChild(row);
+
+            // Pre-create the audio element (but don't play yet)
+            const audio = new Audio(`/sounds/${s.filename}`);
+            audio.loop = true;
+            audio.preload = "none";
+            ambientTracks[s.filename] = { audio, gainNode: null, sourceNode: null };
+          });
+        });
+    }
+
+    function onMixerToggle() {
+      const enabled = document.getElementById("mixerEnabled").checked;
+      // Resume AudioContext on first user interaction
+      if (enabled) getAudioCtx().resume();
+
+      Object.entries(ambientTracks).forEach(([filename, track]) => {
+        const row = document.getElementById(`srow-${filename}`);
+        const slider = row ? row.querySelector(".sound-vol") : null;
+
+        if (enabled) {
+          // Wire into Web Audio for gain control if not done yet
+          if (!track.sourceNode) {
+            const ctx = getAudioCtx();
+            track.gainNode = ctx.createGain();
+            track.sourceNode = ctx.createMediaElementSource(track.audio);
+            track.sourceNode.connect(track.gainNode);
+            track.gainNode.connect(ctx.destination);
+            // Set initial gain from slider
+            const vol = slider ? parseFloat(slider.value) : 0.3;
+            track.gainNode.gain.value = vol;
+          }
+          track.audio.play().catch(() => { });
+          if (row) row.classList.add("active");
+          if (slider) slider.disabled = false;
+        } else {
+          track.audio.pause();
+          if (row) row.classList.remove("active");
+          if (slider) slider.disabled = true;
+        }
+      });
+    }
+
+    function onVolumeChange(filename, value) {
+      const track = ambientTracks[filename];
+      if (track && track.gainNode) {
+        track.gainNode.gain.value = parseFloat(value);
+      }
+      const label = document.getElementById(`vol-${filename}`);
+      if (label) label.textContent = Math.round(value * 100) + "%";
+    }
+
+    loadSounds();
+  </script>
+</body>
+
+</html>
