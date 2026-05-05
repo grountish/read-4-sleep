@@ -621,13 +621,21 @@
       const audio = new Audio(soundUrl);
       audio.loop = true;
       audio.preload = "none";
-      ambientTracks[s.filename] = { audio };
+      ambientTracks[s.filename] = { audio, initVol };
     });
 
     if (anyPreset) {
+      // Pre-check the toggle visually. Defer actual play until first user tap
+      // because iOS blocks audio.play() without a user gesture.
       const toggle = document.getElementById("mixerEnabled");
       toggle.checked = true;
-      onMixerToggle();
+      const startOnGesture = () => {
+        document.removeEventListener("touchstart", startOnGesture);
+        document.removeEventListener("mousedown", startOnGesture);
+        if (toggle.checked) onMixerToggle();
+      };
+      document.addEventListener("touchstart", startOnGesture, { once: true });
+      document.addEventListener("mousedown", startOnGesture, { once: true });
     }
   }
 
@@ -638,8 +646,11 @@
       const row    = document.getElementById(`srow-${filename}`);
       const slider = row?.querySelector(".sound-vol");
       if (enabled) {
-        track.audio.volume = slider ? parseFloat(slider.value) : 0.3;
-        track.audio.play().catch(() => {});
+        const vol = slider ? parseFloat(slider.value) : (track.initVol ?? 0.3);
+        // Set volume before and after play — preload:none delays media load so
+        // the volume assigned before play can be reset when the browser fetches the file.
+        track.audio.volume = vol;
+        track.audio.play().then(() => { track.audio.volume = vol; }).catch(() => {});
         row?.classList.add("active");
         if (slider) slider.disabled = false;
       } else {
