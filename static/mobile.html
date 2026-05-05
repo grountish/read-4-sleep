@@ -410,11 +410,29 @@
 
   // ── Ambient mixer ──────────────────────────────────────────────────────────────
   const ambientTracks = {};
-  let audioCtx = null;
+  let audioCtx    = null;
+  let wakeLock    = null;
 
   function getAudioCtx() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     return audioCtx;
+  }
+
+  async function acquireWakeLock() {
+    if (!("wakeLock" in navigator)) return;
+    try {
+      wakeLock = await navigator.wakeLock.request("screen");
+      // Re-acquire if the page becomes visible again after a tab switch
+      document.addEventListener("visibilitychange", async () => {
+        if (wakeLock && document.visibilityState === "visible") {
+          wakeLock = await navigator.wakeLock.request("screen").catch(() => null);
+        }
+      }, { once: false });
+    } catch {}
+  }
+
+  function releaseWakeLock() {
+    if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
   }
 
   async function loadSounds() {
@@ -471,7 +489,8 @@
 
   function onMixerToggle() {
     const enabled = document.getElementById("mixerEnabled").checked;
-    if (enabled) getAudioCtx().resume();
+    if (enabled) { getAudioCtx().resume(); acquireWakeLock(); }
+    else          { releaseWakeLock(); }
     Object.entries(ambientTracks).forEach(([filename, track]) => {
       const row    = document.getElementById(`srow-${filename}`);
       const slider = row?.querySelector(".sound-vol");
