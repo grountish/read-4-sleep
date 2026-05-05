@@ -622,6 +622,10 @@
       audio.loop = true;
       audio.preload = "none";
       ambientTracks[s.filename] = { audio, initVol };
+      // Re-apply volume on canplay — preload:none can reset volume when the browser first fetches the file
+      audio.addEventListener("canplay", () => {
+        audio.volume = ambientTracks[s.filename]?.initVol ?? 0.3;
+      });
     });
 
     if (anyPreset) {
@@ -663,9 +667,10 @@
 
   function onVolumeChange(filename, value) {
     const track = ambientTracks[filename];
-    if (track?.audio) track.audio.volume = parseFloat(value);
+    const vol = parseFloat(value);
+    if (track) { track.audio.volume = vol; track.initVol = vol; }
     const label = document.getElementById(`vol-${filename}`);
-    if (label) label.textContent = Math.round(value * 100) + "%";
+    if (label) label.textContent = Math.round(vol * 100) + "%";
   }
 
   // ── Preset links ──────────────────────────────────────────────────────────────
