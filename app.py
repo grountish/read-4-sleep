@@ -4,6 +4,7 @@ import uuid
 import json
 import time
 import threading
+import subprocess
 import numpy as np
 import soundfile as sf
 from flask import Flask, request, jsonify, send_file, send_from_directory
@@ -197,17 +198,17 @@ def status(job_id):
 @app.route("/api/library")
 def library():
     items = []
-    for fname in sorted(os.listdir(AUDIO_DIR), reverse=True):
+    for fname in os.listdir(AUDIO_DIR):
         if not fname.endswith(".json"):
             continue
         try:
             with open(os.path.join(AUDIO_DIR, fname)) as f:
                 meta = json.load(f)
-            wav = os.path.join(AUDIO_DIR, meta["filename"])
-            if os.path.exists(wav):
+            if os.path.exists(os.path.join(AUDIO_DIR, meta["filename"])):
                 items.append(meta)
         except Exception:
             pass
+    items.sort(key=lambda x: x.get("created_at", 0), reverse=True)
     return jsonify(items)
 
 
@@ -217,7 +218,45 @@ def audio_get(filename):
     filepath = os.path.join(AUDIO_DIR, filename)
     if not os.path.exists(filepath):
         return jsonify({"error": "File not found"}), 404
-    return send_file(filepath, mimetype="audio/wav", as_attachment=False)
+    mimetype = "audio/mpeg" if filename.endswith(".mp3") else "audio/wav"
+    return send_file(filepath, mimetype=mimetype, as_attachment=False)
+
+
+@app.route("/api/audio/<filename>/convert-mp3", methods=["POST"])
+def audio_convert_mp3(filename):
+    filename = os.path.basename(filename)
+    if not filename.endswith(".wav"):
+        return jsonify({"error": "Only WAV files can be converted"}), 400
+
+    wav_path = os.path.join(AUDIO_DIR, filename)
+    if not os.path.exists(wav_path):
+        return jsonify({"error": "File not found"}), 404
+
+    mp3_filename = filename.replace(".wav", ".mp3")
+    mp3_path = os.path.join(AUDIO_DIR, mp3_filename)
+
+    try:
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", wav_path,
+             "-codec:a", "libmp3lame", "-b:a", "320k", mp3_path],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"ffmpeg failed: {e}"}), 500
+
+    # Update metadata to point to the MP3
+    json_path = os.path.join(AUDIO_DIR, filename.replace(".wav", ".json"))
+    if os.path.exists(json_path):
+        with open(json_path) as f:
+            meta = json.load(f)
+        meta["filename"] = mp3_filename
+        with open(json_path, "w") as f:
+            json.dump(meta, f)
+
+    os.remove(wav_path)
+    return jsonify({"filename": mp3_filename})
 
 
 @app.route("/api/audio/<filename>", methods=["DELETE"])

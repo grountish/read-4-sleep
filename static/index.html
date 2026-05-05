@@ -429,6 +429,20 @@
       background: rgba(124, 140, 248, 0.1);
     }
 
+    .lib-mp3 {
+      color: var(--success);
+      border-color: var(--success);
+    }
+
+    .lib-mp3:hover {
+      background: rgba(110, 231, 183, 0.1);
+    }
+
+    .lib-mp3:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     .lib-del {
       color: var(--danger);
       border-color: var(--danger);
@@ -837,6 +851,9 @@
               month: "short", day: "numeric", year: "numeric",
             });
 
+            const isWav = item.filename.endsWith(".wav");
+            const downloadName = isWav ? "sleep-audio.wav" : "sleep-audio.mp3";
+
             const row = document.createElement("div");
             row.className = "lib-item";
             row.dataset.filename = item.filename;
@@ -844,10 +861,11 @@
             <button class="lib-play" title="Play" onclick="playLibItem('${audioUrl}', this)">▶</button>
             <div class="lib-info">
               <div class="lib-title">${escHtml(item.title)}</div>
-              <div class="lib-meta">${formatDuration(item.duration)} · ${escHtml(item.voice)} · ${date}</div>
+              <div class="lib-meta">${formatDuration(item.duration)} · ${escHtml(item.voice)} · ${date} · <strong>${isWav ? "WAV" : "MP3"}</strong></div>
             </div>
             <div class="lib-actions">
-              <a class="lib-dl" href="${audioUrl}" download="sleep-audio.wav" title="Download">⬇</a>
+              ${isWav ? `<button class="lib-dl lib-mp3" title="Convert to MP3 320kbps" onclick="convertToMp3('${item.filename}', this)">MP3</button>` : ""}
+              <a class="lib-dl" href="${audioUrl}" download="${downloadName}" title="Download">⬇</a>
               <button class="lib-del" title="Delete" onclick="deleteItem('${item.filename}', this)">🗑</button>
             </div>
           `;
@@ -866,6 +884,18 @@
       audioPlayer.play().catch(() => { });
       btn.textContent = "■";
       audioPlayer.onended = () => { btn.textContent = "▶"; };
+    }
+
+    function convertToMp3(filename, btn) {
+      btn.disabled = true;
+      btn.textContent = "…";
+      fetch(`/api/audio/${filename}/convert-mp3`, { method: "POST" })
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) { alert(data.error); btn.disabled = false; btn.textContent = "MP3"; return; }
+          loadLibrary();
+        })
+        .catch(() => { btn.disabled = false; btn.textContent = "MP3"; alert("Conversion failed."); });
     }
 
     function deleteItem(filename, btn) {

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Read for Sleep</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #2a3444;
+      --accent: #7c8cf8;
+      --accent-h: #9ba8ff;
+      --text: #cdd1e0;
+      --muted: #6e7b94;
+      --danger: #f87171;
+      --success: #6ee7b7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0 0 6rem;
+    }
+
+    /* ── Header ── */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.25rem 0.75rem;
+    }
+
+    .top-bar h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .top-bar p {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+
+    /* ── Now playing bar ── */
+    .now-playing {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 0.85rem 1.25rem;
+      z-index: 20;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .now-playing.visible { display: flex; }
+
+    .np-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .np-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    audio {
+      width: 100%;
+      border-radius: 6px;
+      height: 36px;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      position: sticky;
+      top: 65px;
+      z-index: 9;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 0.7rem 0;
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ── Sections ── */
+    .section { display: none; padding: 1rem 1.25rem; }
+    .section.active { display: block; }
+
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 0.85rem;
+    }
+
+    /* ── Library list ── */
+    .lib-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .lib-item:last-child { border-bottom: none; }
+
+    .lib-play {
+      flex-shrink: 0;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: #fff;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .lib-play:active { transform: scale(0.93); }
+    .lib-play.playing { background: var(--success); }
+
+    .lib-info { flex: 1; min-width: 0; }
+
+    .lib-title {
+      font-size: 0.9rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lib-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .empty {
+      font-size: 0.88rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 2rem 0;
+    }
+
+    /* ── Ambient mixer ── */
+    .mixer-master {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .mixer-master span {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 99px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle input:checked + .toggle-track { background: var(--accent); }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 18px; height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      pointer-events: none;
+    }
+
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(20px); }
+
+    .sound-rows { display: flex; flex-direction: column; gap: 0.85rem; }
+
+    .sound-row {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+
+    .sound-row.active { opacity: 1; }
+
+    .sound-icon { font-size: 1.3rem; width: 1.6rem; text-align: center; flex-shrink: 0; }
+
+    .sound-name {
+      font-size: 0.85rem;
+      color: var(--text);
+      min-width: 80px;
+      flex-shrink: 0;
+    }
+
+    .sound-vol {
+      flex: 1;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .sound-vol:disabled { cursor: default; }
+
+    .sound-vol-val {
+      font-size: 0.75rem;
+      color: var(--muted);
+      min-width: 2.8rem;
+      text-align: right;
+    }
+
+    /* ── Config section ── */
+    .config-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .config-row label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .config-row input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.9rem;
+      padding: 0.6rem 0.75rem;
+      outline: none;
+      width: 100%;
+    }
+
+    .config-row input:focus { border-color: var(--accent); }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      transition: background 0.2s;
+    }
+
+    .btn:active { background: var(--accent-h); }
+
+    .config-note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 1rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>🌙 Read for Sleep</h1>
+  <p>Your sleep audio library</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('library', this)">Library</div>
+  <div class="tab" onclick="switchTab('ambient', this)">Ambient</div>
+  <div class="tab" onclick="switchTab('config', this)">Config</div>
+</div>
+
+<!-- Library tab -->
+<div class="section active" id="tab-library">
+  <p class="section-title">Recordings</p>
+  <div id="libraryList"><p class="empty">Loading…</p></div>
+</div>
+
+<!-- Ambient tab -->
+<div class="section" id="tab-ambient">
+  <div class="mixer-master">
+    <span>Ambient sounds</span>
+    <label class="toggle">
+      <input type="checkbox" id="mixerEnabled" onchange="onMixerToggle()" />
+      <span class="toggle-track"></span>
+      <span class="toggle-thumb"></span>
+    </label>
+  </div>
+  <div class="sound-rows" id="soundRows">
+    <p class="empty">Loading…</p>
+  </div>
+</div>
+
+<!-- Config tab -->
+<div class="section" id="tab-config">
+  <p class="section-title">Server</p>
+  <div class="config-row">
+    <label>Desktop server URL</label>
+    <input type="url" id="serverUrl" placeholder="http://192.168.x.x:5050" />
+  </div>
+  <button class="btn" onclick="saveConfig()">Save &amp; Reload</button>
+  <p class="config-note">
+    Enter the local IP of the Mac running the app (e.g. <code>http://192.168.1.10:5050</code>).
+    The mobile player fetches the library and sound URLs from this server.
+  </p>
+</div>
+
+<!-- Now playing bar -->
+<div class="now-playing" id="nowPlaying">
+  <div>
+    <div class="np-title" id="npTitle">—</div>
+    <div class="np-meta" id="npMeta"></div>
+  </div>
+  <audio id="audioPlayer" controls></audio>
+</div>
+
+<script>
+  // ── Config ──────────────────────────────────────────────────────────────────
+
+  function getServerUrl() {
+    return localStorage.getItem("rfs_server_url") || "";
+  }
+
+  function saveConfig() {
+    const url = document.getElementById("serverUrl").value.trim().replace(/\/$/, "");
+    localStorage.setItem("rfs_server_url", url);
+    loadAll();
+  }
+
+  document.getElementById("serverUrl").value = getServerUrl();
+
+  // ── Tabs ────────────────────────────────────────────────────────────────────
+
+  function switchTab(name, el) {
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.getElementById("tab-" + name).classList.add("active");
+    el.classList.add("active");
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+
+  function formatDuration(secs) {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function soundMeta(name) {
+    const lower = name.toLowerCase();
+    if (lower.startsWith("fire"))  return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🔥" };
+    if (lower.startsWith("rain"))  return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🌧️" };
+    if (lower.startsWith("wind"))  return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "💨" };
+    if (lower.startsWith("ocean")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🌊" };
+    if (lower.startsWith("night")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🌌" };
+    if (lower.startsWith("bell"))  return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🔔" };
+    if (lower.startsWith("sine"))  return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "〰️" };
+    return { label: name, icon: "🎵" };
+  }
+
+  // ── Now playing ──────────────────────────────────────────────────────────────
+
+  const audioPlayer = document.getElementById("audioPlayer");
+  const nowPlaying  = document.getElementById("nowPlaying");
+  const npTitle     = document.getElementById("npTitle");
+  const npMeta      = document.getElementById("npMeta");
+  let   activeBtn   = null;
+
+  function playTrack(url, title, meta, btn) {
+    if (activeBtn) {
+      activeBtn.textContent = "▶";
+      activeBtn.classList.remove("playing");
+    }
+    audioPlayer.src = url;
+    audioPlayer.play().catch(() => {});
+    npTitle.textContent = title;
+    npMeta.textContent  = meta;
+    nowPlaying.classList.add("visible");
+    activeBtn = btn;
+    btn.textContent = "■";
+    btn.classList.add("playing");
+    audioPlayer.onended = () => {
+      btn.textContent = "▶";
+      btn.classList.remove("playing");
+    };
+  }
+
+  // ── Library ──────────────────────────────────────────────────────────────────
+
+  function loadLibrary() {
+    const base = getServerUrl();
+    if (!base) {
+      document.getElementById("libraryList").innerHTML =
+        '<p class="empty">Set the server URL in Config first.</p>';
+      return;
+    }
+
+    fetch(`${base}/api/cloudinary-library`)
+      .then(r => r.json())
+      .then(items => {
+        const el = document.getElementById("libraryList");
+        if (!items.length) {
+          el.innerHTML = '<p class="empty">No recordings yet.</p>';
+          return;
+        }
+        el.innerHTML = "";
+        items.forEach(item => {
+          const url  = item.cloudinary_url;
+          const date = new Date(item.created_at * 1000).toLocaleDateString(undefined, {
+            month: "short", day: "numeric", year: "numeric",
+          });
+          const metaStr = `${formatDuration(item.duration)} · ${escHtml(item.voice)} · ${date}`;
+
+          const row = document.createElement("div");
+          row.className = "lib-item";
+          row.innerHTML = `
+            <button class="lib-play" title="Play">▶</button>
+            <div class="lib-info">
+              <div class="lib-title">${escHtml(item.title)}</div>
+              <div class="lib-meta">${metaStr}</div>
+            </div>
+          `;
+          const btn = row.querySelector(".lib-play");
+          btn.addEventListener("click", () => playTrack(url, item.title, metaStr, btn));
+          el.appendChild(row);
+        });
+      })
+      .catch(() => {
+        document.getElementById("libraryList").innerHTML =
+          '<p class="empty">Could not reach server. Check Config.</p>';
+      });
+  }
+
+  // ── Ambient mixer ─────────────────────────────────────────────────────────────
+
+  const ambientTracks = {};
+  let audioCtx = null;
+
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  function loadSounds() {
+    const base = getServerUrl();
+    if (!base) return;
+
+    fetch(`${base}/api/cloudinary-sounds`)
+      .then(r => r.json())
+      .then(sounds => {
+        const container = document.getElementById("soundRows");
+        if (!sounds.length) {
+          container.innerHTML = '<p class="empty">No sounds available.</p>';
+          return;
+        }
+        container.innerHTML = "";
+        sounds.forEach(s => {
+          const { label, icon } = soundMeta(s.name);
+          const row = document.createElement("div");
+          row.className = "sound-row";
+          row.id = `srow-${s.filename}`;
+          row.innerHTML = `
+            <span class="sound-icon">${icon}</span>
+            <span class="sound-name">${escHtml(label)}</span>
+            <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="0.3"
+              disabled title="Volume" />
+            <span class="sound-vol-val" id="vol-${s.filename}">30%</span>
+          `;
+          row.querySelector(".sound-vol").addEventListener("input", e => {
+            onVolumeChange(s.filename, e.target.value);
+          });
+          container.appendChild(row);
+
+          const audio = new Audio(s.url);
+          audio.loop = true;
+          audio.preload = "none";
+          audio.crossOrigin = "anonymous";
+          ambientTracks[s.filename] = { audio, gainNode: null, sourceNode: null };
+        });
+      })
+      .catch(() => {
+        document.getElementById("soundRows").innerHTML =
+          '<p class="empty">Could not load sounds. Check Config.</p>';
+      });
+  }
+
+  function onMixerToggle() {
+    const enabled = document.getElementById("mixerEnabled").checked;
+    if (enabled) getAudioCtx().resume();
+
+    Object.entries(ambientTracks).forEach(([filename, track]) => {
+      const row    = document.getElementById(`srow-${filename}`);
+      const slider = row ? row.querySelector(".sound-vol") : null;
+
+      if (enabled) {
+        if (!track.sourceNode) {
+          const ctx = getAudioCtx();
+          track.gainNode  = ctx.createGain();
+          track.sourceNode = ctx.createMediaElementSource(track.audio);
+          track.sourceNode.connect(track.gainNode);
+          track.gainNode.connect(ctx.destination);
+          track.gainNode.gain.value = slider ? parseFloat(slider.value) : 0.3;
+        }
+        track.audio.play().catch(() => {});
+        if (row)    row.classList.add("active");
+        if (slider) slider.disabled = false;
+      } else {
+        track.audio.pause();
+        if (row)    row.classList.remove("active");
+        if (slider) slider.disabled = true;
+      }
+    });
+  }
+
+  function onVolumeChange(filename, value) {
+    const track = ambientTracks[filename];
+    if (track && track.gainNode) track.gainNode.gain.value = parseFloat(value);
+    const label = document.getElementById(`vol-${filename}`);
+    if (label) label.textContent = Math.round(value * 100) + "%";
+  }
+
+  // ── Boot ─────────────────────────────────────────────────────────────────────
+
+  function loadAll() {
+    loadLibrary();
+    loadSounds();
+  }
+
+  loadAll();
+</script>
+</body>
+</html>
