@@ -550,27 +550,17 @@
   const ambientTracks = {};
   let audioCtx = null;
 
+  // On iOS, Web Audio API is suspended on screen lock UNLESS a native <audio>
+  // element is already playing (holding the audio session open as media playback).
+  // A silent looping <audio> anchors the iOS audio session so the AudioContext
+  // (used for per-track gain control) stays alive through screen lock.
+  const anchor = new Audio();
+  anchor.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+  anchor.loop = true;
+
   function getAudioCtx() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     return audioCtx;
-  }
-
-  function registerMediaSession() {
-    if (!("mediaSession" in navigator)) return;
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: "Ambient Sounds",
-      artist: "Read for Sleep",
-    });
-    // Keep playback state active so iOS doesn't suspend audio
-    navigator.mediaSession.playbackState = "playing";
-    navigator.mediaSession.setActionHandler("play",  () => {
-      Object.values(ambientTracks).forEach(t => t.audio.play().catch(() => {}));
-      navigator.mediaSession.playbackState = "playing";
-    });
-    navigator.mediaSession.setActionHandler("pause", () => {
-      Object.values(ambientTracks).forEach(t => t.audio.pause());
-      navigator.mediaSession.playbackState = "paused";
-    });
   }
 
   async function loadSounds() {
@@ -627,12 +617,12 @@
 
   function onMixerToggle() {
     const enabled = document.getElementById("mixerEnabled").checked;
-
+    const ctx = getAudioCtx();
     if (enabled) {
-      getAudioCtx().resume();
-      registerMediaSession();
+      anchor.play().catch(() => {});
+      ctx.resume();
     } else {
-      if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
+      anchor.pause();
     }
 
     Object.entries(ambientTracks).forEach(([filename, track]) => {
@@ -640,7 +630,6 @@
       const slider = row?.querySelector(".sound-vol");
       if (enabled) {
         if (!track.sourceNode) {
-          const ctx = getAudioCtx();
           track.gainNode   = ctx.createGain();
           track.sourceNode = ctx.createMediaElementSource(track.audio);
           track.sourceNode.connect(track.gainNode);
