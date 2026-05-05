@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
@@ -22,7 +23,11 @@
       --success: #6ee7b7;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       background: var(--bg);
@@ -46,8 +51,17 @@
       justify-content: space-between;
     }
 
-    .top-bar h1 { font-size: 1.25rem; font-weight: 700; color: #fff; }
-    .top-bar p  { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+    .top-bar h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .top-bar p {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
 
     .server-badge {
       font-size: 0.7rem;
@@ -58,14 +72,23 @@
       margin-top: 0.2rem;
     }
 
-    .server-badge.online  { background: rgba(110,231,183,0.15); color: var(--success); }
-    .server-badge.offline { background: rgba(110,131,183,0.1);  color: var(--muted); }
+    .server-badge.online {
+      background: rgba(110, 231, 183, 0.15);
+      color: var(--success);
+    }
+
+    .server-badge.offline {
+      background: rgba(110, 131, 183, 0.1);
+      color: var(--muted);
+    }
 
     /* Now playing */
     .now-playing {
       display: none;
       position: fixed;
-      bottom: 0; left: 0; right: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
       background: #111318;
       border-top: 1px solid var(--border);
       padding: 0.75rem 1.25rem 1.1rem;
@@ -73,32 +96,65 @@
       flex-direction: column;
       gap: 0.6rem;
     }
-    .now-playing.visible { display: flex; }
+
+    .now-playing.visible {
+      display: flex;
+    }
 
     .np-info {
       display: flex;
       align-items: center;
       gap: 0.75rem;
     }
+
     .np-art {
-      width: 40px; height: 40px;
+      width: 40px;
+      height: 40px;
       border-radius: 6px;
       background: var(--border);
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 1.2rem;
       flex-shrink: 0;
     }
-    .np-text { flex: 1; min-width: 0; }
-    .np-title { font-size: 0.88rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .np-meta  { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+
+    .np-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .np-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .np-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.1rem;
+    }
 
     .np-scrubber-row {
       display: flex;
       align-items: center;
       gap: 0.6rem;
     }
-    .np-time { font-size: 0.68rem; color: var(--muted); min-width: 2.8rem; }
-    .np-time.right { text-align: right; }
+
+    .np-time {
+      font-size: 0.68rem;
+      color: var(--muted);
+      min-width: 2.8rem;
+    }
+
+    .np-time.right {
+      text-align: right;
+    }
+
     .np-scrubber {
       flex: 1;
       -webkit-appearance: none;
@@ -109,9 +165,11 @@
       accent-color: #fff;
       cursor: pointer;
     }
+
     .np-scrubber::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 12px; height: 12px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       background: #fff;
       cursor: pointer;
@@ -123,20 +181,38 @@
       justify-content: center;
       gap: 1.5rem;
     }
+
     .np-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--text); display: flex; align-items: center; justify-content: center;
-      padding: 0; transition: color 0.15s, transform 0.1s;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: color 0.15s, transform 0.1s;
     }
-    .np-btn:active { transform: scale(0.9); }
-    .np-btn svg { display: block; }
+
+    .np-btn:active {
+      transform: scale(0.9);
+    }
+
+    .np-btn svg {
+      display: block;
+    }
+
     .np-btn.primary {
-      width: 52px; height: 52px;
+      width: 52px;
+      height: 52px;
       background: #fff;
       border-radius: 50%;
       color: #000;
     }
-    .np-btn.primary:active { transform: scale(0.93); }
+
+    .np-btn.primary:active {
+      transform: scale(0.93);
+    }
 
     /* Tabs */
     .tabs {
@@ -147,387 +223,666 @@
       top: 65px;
       z-index: 9;
     }
+
     .tab {
-      flex: 1; padding: 0.7rem 0; text-align: center;
-      font-size: 0.82rem; font-weight: 600; color: var(--muted);
-      cursor: pointer; border-bottom: 2px solid transparent;
+      flex: 1;
+      padding: 0.7rem 0;
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
       transition: color 0.15s, border-color 0.15s;
     }
-    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-    .tab.hidden { display: none; }
 
-    .section { display: none; padding: 1rem 1.25rem; }
-    .section.active { display: block; }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab.hidden {
+      display: none;
+    }
+
+    .section {
+      display: none;
+      padding: 1rem 1.25rem;
+    }
+
+    .section.active {
+      display: block;
+    }
 
     .section-title {
-      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
-      letter-spacing: 0.07em; color: var(--muted); margin-bottom: 0.85rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 0.85rem;
     }
 
     /* Library */
     .lib-item {
-      display: flex; align-items: center; gap: 0.75rem;
-      padding: 0.85rem 0; border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border);
     }
-    .lib-item:last-child { border-bottom: none; }
+
+    .lib-item:last-child {
+      border-bottom: none;
+    }
 
     .lib-play {
-      flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%;
-      background: var(--accent); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; color: #fff; transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: #fff;
+      transition: background 0.15s, transform 0.1s;
     }
-    .lib-play:active { transform: scale(0.93); }
-    .lib-play.playing { background: var(--success); }
 
-    .lib-info { flex: 1; min-width: 0; }
-    .lib-title { font-size: 0.9rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .lib-meta  { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+    .lib-play:active {
+      transform: scale(0.93);
+    }
+
+    .lib-play.playing {
+      background: var(--success);
+    }
+
+    .lib-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .lib-title {
+      font-size: 0.9rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lib-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
 
     .lib-del {
-      flex-shrink: 0; padding: 0.3rem 0.55rem; border-radius: 6px;
-      border: 1px solid var(--danger); background: transparent;
-      color: var(--danger); font-size: 0.8rem; cursor: pointer;
+      flex-shrink: 0;
+      padding: 0.3rem 0.55rem;
+      border-radius: 6px;
+      border: 1px solid var(--danger);
+      background: transparent;
+      color: var(--danger);
+      font-size: 0.8rem;
+      cursor: pointer;
       transition: background 0.15s;
     }
-    .lib-del:hover { background: rgba(248,113,113,0.1); }
 
-    .empty { font-size: 0.88rem; color: var(--muted); text-align: center; padding: 2rem 0; }
+    .lib-del:hover {
+      background: rgba(248, 113, 113, 0.1);
+    }
+
+    .empty {
+      font-size: 0.88rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 2rem 0;
+    }
 
     /* Ambient */
     .mixer-master {
-      display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
     }
-    .mixer-master span { font-size: 0.9rem; font-weight: 600; color: #fff; }
 
-    .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-    .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-track { position: absolute; inset: 0; background: var(--border); border-radius: 99px; cursor: pointer; transition: background 0.2s; }
-    .toggle input:checked + .toggle-track { background: var(--accent); }
-    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform 0.2s; pointer-events: none; }
-    .toggle input:checked ~ .toggle-thumb { transform: translateX(20px); }
+    .mixer-master span {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+    }
 
-    .sound-rows { display: flex; flex-direction: column; gap: 0.85rem; }
-    .sound-row { display: flex; align-items: center; gap: 0.85rem; opacity: 0.4; transition: opacity 0.2s; }
-    .sound-row.active { opacity: 1; }
-    .sound-icon { font-size: 1.3rem; width: 1.6rem; text-align: center; flex-shrink: 0; }
-    .sound-name { font-size: 0.85rem; color: var(--text); min-width: 80px; flex-shrink: 0; }
-    .sound-vol { flex: 1; accent-color: var(--accent); cursor: pointer; }
-    .sound-vol:disabled { cursor: default; }
-    .sound-vol-val { font-size: 0.75rem; color: var(--muted); min-width: 2.8rem; text-align: right; }
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 99px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle input:checked+.toggle-track {
+      background: var(--accent);
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      pointer-events: none;
+    }
+
+    .toggle input:checked~.toggle-thumb {
+      transform: translateX(20px);
+    }
+
+    .sound-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .sound-row {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+
+    .sound-row.active {
+      opacity: 1;
+    }
+
+    .sound-icon {
+      font-size: 1.3rem;
+      width: 1.6rem;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .sound-name {
+      font-size: 0.85rem;
+      color: var(--text);
+      min-width: 80px;
+      flex-shrink: 0;
+    }
+
+    .sound-vol {
+      flex: 1;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .sound-vol:disabled {
+      cursor: default;
+    }
+
+    .sound-vol-val {
+      font-size: 0.75rem;
+      color: var(--muted);
+      min-width: 2.8rem;
+      text-align: right;
+    }
 
     /* Generate (local-only) */
     .gen-textarea {
-      width: 100%; height: 200px; background: var(--bg);
-      border: 1px solid var(--border); border-radius: 10px;
-      color: var(--text); font-size: 0.9rem; line-height: 1.6;
-      padding: 0.85rem; resize: vertical; outline: none;
-      transition: border-color 0.2s; font-family: inherit;
+      width: 100%;
+      height: 200px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      padding: 0.85rem;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
     }
-    .gen-textarea:focus { border-color: var(--accent); }
-    .gen-textarea::placeholder { color: var(--muted); }
 
-    .gen-row { display: flex; gap: 0.75rem; margin-top: 0.85rem; flex-wrap: wrap; }
+    .gen-textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .gen-textarea::placeholder {
+      color: var(--muted);
+    }
+
+    .gen-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.85rem;
+      flex-wrap: wrap;
+    }
 
     .gen-select {
-      flex: 1; min-width: 120px; background: var(--bg);
-      border: 1px solid var(--border); border-radius: 8px;
-      color: var(--text); font-size: 0.85rem; padding: 0.5rem 0.65rem;
-      outline: none; cursor: pointer;
+      flex: 1;
+      min-width: 120px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.85rem;
+      padding: 0.5rem 0.65rem;
+      outline: none;
+      cursor: pointer;
     }
 
-    .speed-group { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 120px; }
-    .speed-label { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
-    .speed-val   { font-size: 0.82rem; color: var(--accent); min-width: 2.5rem; text-align: right; }
-    input[type="range"] { flex: 1; accent-color: var(--accent); }
+    .speed-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .speed-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .speed-val {
+      font-size: 0.82rem;
+      color: var(--accent);
+      min-width: 2.5rem;
+      text-align: right;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+    }
 
     .gen-btn {
-      width: 100%; margin-top: 1rem; padding: 0.85rem;
-      border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600;
-      cursor: pointer; background: var(--accent); color: #fff; transition: background 0.2s;
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.85rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      transition: background 0.2s;
     }
-    .gen-btn:active { background: var(--accent-h); }
-    .gen-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
 
-    .progress-wrap { display: none; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
-    .progress-wrap.visible { display: flex; }
-    .progress-bar-bg { background: var(--bg); border-radius: 99px; height: 5px; overflow: hidden; border: 1px solid var(--border); }
-    .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.4s; width: 0%; }
-    .progress-label { font-size: 0.78rem; color: var(--muted); display: flex; justify-content: space-between; }
+    .gen-btn:active {
+      background: var(--accent-h);
+    }
+
+    .gen-btn:disabled {
+      background: var(--border);
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .progress-wrap {
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .progress-wrap.visible {
+      display: flex;
+    }
+
+    .progress-bar-bg {
+      background: var(--bg);
+      border-radius: 99px;
+      height: 5px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+      transition: width 0.4s;
+      width: 0%;
+    }
+
+    .progress-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
 
     .gen-error {
-      display: none; color: var(--danger); font-size: 0.82rem; margin-top: 0.75rem;
-      padding: 0.6rem 0.85rem; background: rgba(248,113,113,0.08);
-      border: 1px solid rgba(248,113,113,0.25); border-radius: 8px;
+      display: none;
+      color: var(--danger);
+      font-size: 0.82rem;
+      margin-top: 0.75rem;
+      padding: 0.6rem 0.85rem;
+      background: rgba(248, 113, 113, 0.08);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+      border-radius: 8px;
     }
-    .gen-error.visible { display: block; }
+
+    .gen-error.visible {
+      display: block;
+    }
 
     .preset-btn {
-      display: block; width: 100%; margin-top: 1.25rem;
-      padding: 0.65rem; border: 1px solid var(--border); border-radius: 8px;
-      background: transparent; color: var(--muted); font-size: 0.82rem;
-      cursor: pointer; transition: border-color 0.15s, color 0.15s;
+      display: block;
+      width: 100%;
+      margin-top: 1.25rem;
+      padding: 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
     }
-    .preset-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .preset-btn.copied { border-color: var(--success); color: var(--success); }
+
+    .preset-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .preset-btn.copied {
+      border-color: var(--success);
+      color: var(--success);
+    }
   </style>
 </head>
+
 <body>
 
-<div class="top-bar">
-  <div>
-    <h1>🌙 Read for Sleep</h1>
-    <p id="topSub">Your sleep audio library</p>
-  </div>
-  <span class="server-badge offline" id="serverBadge">● offline</span>
-</div>
-
-<div class="tabs">
-  <div class="tab active" id="tab-btn-library"  onclick="switchTab('library', this)">Library</div>
-  <div class="tab"        id="tab-btn-ambient"  onclick="switchTab('ambient', this)">Ambient</div>
-  <div class="tab hidden" id="tab-btn-generate" onclick="switchTab('generate', this)">Generate</div>
-</div>
-
-<!-- Library -->
-<div class="section active" id="tab-library">
-  <p class="section-title">Recordings</p>
-  <div id="libraryList"><p class="empty">Loading…</p></div>
-</div>
-
-<!-- Ambient -->
-<div class="section" id="tab-ambient">
-  <div class="mixer-master">
-    <span>Ambient sounds</span>
-    <label class="toggle">
-      <input type="checkbox" id="mixerEnabled" onchange="onMixerToggle()" />
-      <span class="toggle-track"></span>
-      <span class="toggle-thumb"></span>
-    </label>
-  </div>
-  <div class="sound-rows" id="soundRows"><p class="empty">Loading…</p></div>
-  <button class="preset-btn" id="presetCopyBtn" onclick="copyPresetLink()">Copy preset link</button>
-</div>
-
-<!-- Generate (shown only when local server is reachable) -->
-<div class="section" id="tab-generate">
-  <p class="section-title">New recording</p>
-  <textarea class="gen-textarea" id="genText" placeholder="Paste any text to read aloud…"></textarea>
-  <div class="gen-row">
-    <select class="gen-select" id="genVoice"></select>
-    <div class="speed-group">
-      <span class="speed-label">Speed</span>
-      <input type="range" id="genSpeed" min="0.5" max="1.2" step="0.05" value="0.8"
-        oninput="document.getElementById('genSpeedVal').textContent = parseFloat(this.value).toFixed(2) + '×'" />
-      <span class="speed-val" id="genSpeedVal">0.80×</span>
+  <div class="top-bar">
+    <div>
+      <h1>🌙 Read for Sleep</h1>
+      <p id="topSub">Your sleep audio library</p>
     </div>
+    <span class="server-badge offline" id="serverBadge">● offline</span>
   </div>
-  <button class="gen-btn" id="genBtn" onclick="startGeneration()">✨ Generate Sleep Audio</button>
-  <div class="progress-wrap" id="genProgress">
-    <div class="progress-label">
-      <span id="genStatusText">Generating…</span>
-      <span id="genPct">0%</span>
-    </div>
-    <div class="progress-bar-bg"><div class="progress-bar-fill" id="genBar"></div></div>
+
+  <div class="tabs">
+    <div class="tab active" id="tab-btn-library" onclick="switchTab('library', this)">Library</div>
+    <div class="tab" id="tab-btn-ambient" onclick="switchTab('ambient', this)">Ambient</div>
+    <div class="tab hidden" id="tab-btn-generate" onclick="switchTab('generate', this)">Generate</div>
   </div>
-  <div class="gen-error" id="genError"></div>
-</div>
 
-<!-- Now playing -->
-<div class="now-playing" id="nowPlaying">
-  <audio id="audioPlayer"></audio>
-
-  <div class="np-info">
-    <div class="np-art">🌙</div>
-    <div class="np-text">
-      <div class="np-title" id="npTitle">—</div>
-      <div class="np-meta"  id="npMeta"></div>
+  <!-- Library -->
+  <div class="section active" id="tab-library">
+    <p class="section-title">Recordings</p>
+    <div id="libraryList">
+      <p class="empty">Loading…</p>
     </div>
   </div>
 
-  <div class="np-scrubber-row">
-    <span class="np-time" id="npCurrent">0:00</span>
-    <input type="range" class="np-scrubber" id="npScrubber" min="0" value="0" step="1" />
-    <span class="np-time right" id="npDuration">0:00</span>
+  <!-- Ambient -->
+  <div class="section" id="tab-ambient">
+    <div class="mixer-master">
+      <span>Ambient sounds</span>
+      <label class="toggle">
+        <input type="checkbox" id="mixerEnabled" onchange="onMixerToggle()" />
+        <span class="toggle-track"></span>
+        <span class="toggle-thumb"></span>
+      </label>
+    </div>
+    <div class="sound-rows" id="soundRows">
+      <p class="empty">Loading…</p>
+    </div>
+    <button class="preset-btn" id="presetCopyBtn" onclick="copyPresetLink()">Copy preset link</button>
   </div>
 
-  <div class="np-controls">
-    <!-- Skip back 15s -->
-    <button class="np-btn" onclick="seekRel(-15)" title="−15s">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M11.99 5V1l-5 5 5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6h-2c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
-        <text x="7.5" y="15.5" font-size="5.5" font-family="sans-serif" font-weight="bold" fill="currentColor">15</text>
-      </svg>
-    </button>
-    <!-- Play / Pause -->
-    <button class="np-btn primary" id="npPlayPause" onclick="togglePlay()">
-      <svg id="npPlayIcon" width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M8 5v14l11-7z"/>
-      </svg>
-    </button>
-    <!-- Skip forward 15s -->
-    <button class="np-btn" onclick="seekRel(15)" title="+15s">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12.01 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/>
-        <text x="7.5" y="15.5" font-size="5.5" font-family="sans-serif" font-weight="bold" fill="currentColor">15</text>
-      </svg>
-    </button>
+  <!-- Generate (shown only when local server is reachable) -->
+  <div class="section" id="tab-generate">
+    <p class="section-title">New recording</p>
+    <textarea class="gen-textarea" id="genText" placeholder="Paste any text to read aloud…"></textarea>
+    <div class="gen-row">
+      <select class="gen-select" id="genVoice"></select>
+      <div class="speed-group">
+        <span class="speed-label">Speed</span>
+        <input type="range" id="genSpeed" min="0.5" max="1.2" step="0.05" value="0.8"
+          oninput="document.getElementById('genSpeedVal').textContent = parseFloat(this.value).toFixed(2) + '×'" />
+        <span class="speed-val" id="genSpeedVal">0.80×</span>
+      </div>
+    </div>
+    <button class="gen-btn" id="genBtn" onclick="startGeneration()">✨ Generate Sleep Audio</button>
+    <div class="progress-wrap" id="genProgress">
+      <div class="progress-label">
+        <span id="genStatusText">Generating…</span>
+        <span id="genPct">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="genBar"></div>
+      </div>
+    </div>
+    <div class="gen-error" id="genError"></div>
   </div>
-</div>
 
-<script>
-  // ── Mode detection ────────────────────────────────────────────────────────────
-  // Local server URL — stored so user can override if needed via ?server=
-  const params     = new URLSearchParams(location.search);
-  const SERVER     = (params.get("server") || localStorage.getItem("rfs_server") || "").replace(/\/$/, "");
-  let   serverOnline = false;
+  <!-- Now playing -->
+  <div class="now-playing" id="nowPlaying">
+    <audio id="audioPlayer"></audio>
 
-  async function detectServer() {
-    const candidates = SERVER
-      ? [SERVER]
-      : ["http://localhost:5050", "http://127.0.0.1:5050"];
+    <div class="np-info">
+      <div class="np-art">🌙</div>
+      <div class="np-text">
+        <div class="np-title" id="npTitle">—</div>
+        <div class="np-meta" id="npMeta"></div>
+      </div>
+    </div>
 
-    for (const url of candidates) {
+    <div class="np-scrubber-row">
+      <span class="np-time" id="npCurrent">0:00</span>
+      <input type="range" class="np-scrubber" id="npScrubber" min="0" value="0" step="1" />
+      <span class="np-time right" id="npDuration">0:00</span>
+    </div>
+
+    <div class="np-controls">
+      <!-- Skip back 15s -->
+      <button class="np-btn" onclick="seekRel(-15)" title="−15s">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M11.99 5V1l-5 5 5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6h-2c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+          <text x="7.5" y="15.5" font-size="5.5" font-family="sans-serif" font-weight="bold"
+            fill="currentColor">15</text>
+        </svg>
+      </button>
+      <!-- Play / Pause -->
+      <button class="np-btn primary" id="npPlayPause" onclick="togglePlay()">
+        <svg id="npPlayIcon" width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </button>
+      <!-- Skip forward 15s -->
+      <button class="np-btn" onclick="seekRel(15)" title="+15s">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12.01 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z" />
+          <text x="7.5" y="15.5" font-size="5.5" font-family="sans-serif" font-weight="bold"
+            fill="currentColor">15</text>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ── Mode detection ────────────────────────────────────────────────────────────
+    // Local server URL — stored so user can override if needed via ?server=
+    const params = new URLSearchParams(location.search);
+    const SERVER = (params.get("server") || localStorage.getItem("rfs_server") || "").replace(/\/$/, "");
+    let serverOnline = false;
+
+    async function detectServer() {
+      const candidates = SERVER
+        ? [SERVER]
+        : ["http://localhost:5050", "http://127.0.0.1:5050"];
+
+      for (const url of candidates) {
+        try {
+          const r = await fetch(`${url}/api/voices`, { signal: AbortSignal.timeout(1500) });
+          if (r.ok) {
+            serverOnline = true;
+            if (SERVER !== url) localStorage.setItem("rfs_server", url);
+            return url;
+          }
+        } catch { }
+      }
+      return null;
+    }
+
+    // Base URLs resolved after detection
+    let apiBase = "";   // local server  e.g. http://localhost:5050
+    let staticBase = ""; // GitHub Pages root or same origin
+
+    // On GitHub Pages the page lives at /read-4-sleep/static/mobile.html
+    // Sounds and generated_audio are at /read-4-sleep/sounds/ and /read-4-sleep/generated_audio/
+    // When running locally they're served by Flask at /sounds/ and /generated_audio/
+    function resolveStaticBase() {
+      // Walk up from /…/static/mobile.html → /…/
+      const path = location.pathname.replace(/\/static\/mobile\.html$/, "");
+      return location.origin + path;
+    }
+
+    // ── Tabs ─────────────────────────────────────────────────────────────────────
+    function switchTab(name, el) {
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.getElementById("tab-" + name).classList.add("active");
+      el.classList.add("active");
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────────
+    function formatDuration(secs) {
+      const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60), s = secs % 60;
+      if (h > 0) return `${h}h ${m}m`;
+      if (m > 0) return `${m}m ${s}s`;
+      return `${s}s`;
+    }
+    function escHtml(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function soundMeta(name) {
+      const l = name.toLowerCase();
+      if (l.startsWith("fire")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🔥" };
+      if (l.startsWith("rain")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🌧️" };
+      if (l.startsWith("wind")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "💨" };
+      if (l.startsWith("ocean")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🌊" };
+      if (l.startsWith("night")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🌌" };
+      if (l.startsWith("bell")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "🔔" };
+      if (l.startsWith("sine")) return { label: name.replace(/(\d+)$/, " $1").trim(), icon: "〰️" };
+      return { label: name, icon: "🎵" };
+    }
+
+    // ── Now playing ───────────────────────────────────────────────────────────────
+    const audioPlayer = document.getElementById("audioPlayer");
+    const nowPlaying = document.getElementById("nowPlaying");
+    const npScrubber = document.getElementById("npScrubber");
+    const npPlayIcon = document.getElementById("npPlayIcon");
+    let activeBtn = null;
+    let isSeeking = false;
+
+    const PLAY_PATH = "M8 5v14l11-7z";
+    const PAUSE_PATH = "M6 19h4V5H6v14zm8-14v14h4V5h-4z";
+
+    function fmtTime(s) {
+      if (!isFinite(s)) return "0:00";
+      const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+      return `${m}:${sec.toString().padStart(2, "0")}`;
+    }
+
+    audioPlayer.addEventListener("timeupdate", () => {
+      if (isSeeking) return;
+      npScrubber.value = audioPlayer.currentTime;
+      document.getElementById("npCurrent").textContent = fmtTime(audioPlayer.currentTime);
+    });
+    audioPlayer.addEventListener("loadedmetadata", () => {
+      npScrubber.max = Math.floor(audioPlayer.duration);
+      document.getElementById("npDuration").textContent = fmtTime(audioPlayer.duration);
+    });
+    audioPlayer.addEventListener("play", () => npPlayIcon.querySelector("path").setAttribute("d", PAUSE_PATH));
+    audioPlayer.addEventListener("pause", () => npPlayIcon.querySelector("path").setAttribute("d", PLAY_PATH));
+    audioPlayer.addEventListener("ended", () => {
+      npPlayIcon.querySelector("path").setAttribute("d", PLAY_PATH);
+      if (activeBtn) { activeBtn.textContent = "▶"; activeBtn.classList.remove("playing"); }
+    });
+
+    npScrubber.addEventListener("mousedown", () => isSeeking = true);
+    npScrubber.addEventListener("touchstart", () => isSeeking = true, { passive: true });
+    npScrubber.addEventListener("input", () => document.getElementById("npCurrent").textContent = fmtTime(+npScrubber.value));
+    npScrubber.addEventListener("change", () => { audioPlayer.currentTime = +npScrubber.value; isSeeking = false; });
+
+    function togglePlay() {
+      if (audioPlayer.paused) audioPlayer.play().catch(() => { });
+      else audioPlayer.pause();
+    }
+    function seekRel(secs) {
+      audioPlayer.currentTime = Math.max(0, Math.min(audioPlayer.duration || 0, audioPlayer.currentTime + secs));
+    }
+
+    function playTrack(url, title, metaStr, btn) {
+      if (activeBtn) { activeBtn.textContent = "▶"; activeBtn.classList.remove("playing"); }
+      audioPlayer.src = url;
+      audioPlayer.play().catch(() => { });
+      document.getElementById("npTitle").textContent = title;
+      document.getElementById("npMeta").textContent = metaStr;
+      nowPlaying.classList.add("visible");
+      activeBtn = btn;
+      btn.textContent = "■";
+      btn.classList.add("playing");
+    }
+
+    // ── Library ───────────────────────────────────────────────────────────────────
+    async function loadLibrary() {
+      const el = document.getElementById("libraryList");
+      el.innerHTML = '<p class="empty">Loading…</p>';
+
+      let items;
       try {
-        const r = await fetch(`${url}/api/voices`, { signal: AbortSignal.timeout(1500) });
-        if (r.ok) {
-          serverOnline = true;
-          if (SERVER !== url) localStorage.setItem("rfs_server", url);
-          return url;
-        }
-      } catch {}
-    }
-    return null;
-  }
+        // Always read the manifest — works both locally (Flask serves it) and on GitHub Pages
+        const r = await fetch(`${staticBase}/generated_audio/library.json?t=${Date.now()}`);
+        items = await r.json();
+      } catch {
+        el.innerHTML = '<p class="empty">Could not load library.</p>';
+        return;
+      }
 
-  // Base URLs resolved after detection
-  let apiBase  = "";   // local server  e.g. http://localhost:5050
-  let staticBase = ""; // GitHub Pages root or same origin
+      if (!items.length) { el.innerHTML = '<p class="empty">No recordings yet.</p>'; return; }
 
-  // On GitHub Pages the page lives at /read-4-sleep/static/mobile.html
-  // Sounds and generated_audio are at /read-4-sleep/sounds/ and /read-4-sleep/generated_audio/
-  // When running locally they're served by Flask at /sounds/ and /generated_audio/
-  function resolveStaticBase() {
-    // Walk up from /…/static/mobile.html → /…/
-    const path = location.pathname.replace(/\/static\/mobile\.html$/, "");
-    return location.origin + path;
-  }
+      el.innerHTML = "";
+      items.forEach(item => {
+        const audioUrl = `${staticBase}/generated_audio/${item.filename}`;
+        const date = new Date(item.created_at * 1000).toLocaleDateString(undefined, {
+          month: "short", day: "numeric", year: "numeric",
+        });
+        const metaStr = `${formatDuration(item.duration)} · ${escHtml(item.voice)} · ${date}`;
 
-  // ── Tabs ─────────────────────────────────────────────────────────────────────
-  function switchTab(name, el) {
-    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    document.getElementById("tab-" + name).classList.add("active");
-    el.classList.add("active");
-  }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────────
-  function formatDuration(secs) {
-    const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60), s = secs % 60;
-    if (h > 0) return `${h}h ${m}m`;
-    if (m > 0) return `${m}m ${s}s`;
-    return `${s}s`;
-  }
-  function escHtml(s) {
-    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-  }
-  function soundMeta(name) {
-    const l = name.toLowerCase();
-    if (l.startsWith("fire"))  return { label: name.replace(/(\d+)$/," $1").trim(), icon: "🔥" };
-    if (l.startsWith("rain"))  return { label: name.replace(/(\d+)$/," $1").trim(), icon: "🌧️" };
-    if (l.startsWith("wind"))  return { label: name.replace(/(\d+)$/," $1").trim(), icon: "💨" };
-    if (l.startsWith("ocean")) return { label: name.replace(/(\d+)$/," $1").trim(), icon: "🌊" };
-    if (l.startsWith("night")) return { label: name.replace(/(\d+)$/," $1").trim(), icon: "🌌" };
-    if (l.startsWith("bell"))  return { label: name.replace(/(\d+)$/," $1").trim(), icon: "🔔" };
-    if (l.startsWith("sine"))  return { label: name.replace(/(\d+)$/," $1").trim(), icon: "〰️" };
-    return { label: name, icon: "🎵" };
-  }
-
-  // ── Now playing ───────────────────────────────────────────────────────────────
-  const audioPlayer = document.getElementById("audioPlayer");
-  const nowPlaying  = document.getElementById("nowPlaying");
-  const npScrubber  = document.getElementById("npScrubber");
-  const npPlayIcon  = document.getElementById("npPlayIcon");
-  let activeBtn = null;
-  let isSeeking = false;
-
-  const PLAY_PATH  = "M8 5v14l11-7z";
-  const PAUSE_PATH = "M6 19h4V5H6v14zm8-14v14h4V5h-4z";
-
-  function fmtTime(s) {
-    if (!isFinite(s)) return "0:00";
-    const m = Math.floor(s / 60), sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, "0")}`;
-  }
-
-  audioPlayer.addEventListener("timeupdate", () => {
-    if (isSeeking) return;
-    npScrubber.value = audioPlayer.currentTime;
-    document.getElementById("npCurrent").textContent = fmtTime(audioPlayer.currentTime);
-  });
-  audioPlayer.addEventListener("loadedmetadata", () => {
-    npScrubber.max = Math.floor(audioPlayer.duration);
-    document.getElementById("npDuration").textContent = fmtTime(audioPlayer.duration);
-  });
-  audioPlayer.addEventListener("play",  () => npPlayIcon.querySelector("path").setAttribute("d", PAUSE_PATH));
-  audioPlayer.addEventListener("pause", () => npPlayIcon.querySelector("path").setAttribute("d", PLAY_PATH));
-  audioPlayer.addEventListener("ended", () => {
-    npPlayIcon.querySelector("path").setAttribute("d", PLAY_PATH);
-    if (activeBtn) { activeBtn.textContent = "▶"; activeBtn.classList.remove("playing"); }
-  });
-
-  npScrubber.addEventListener("mousedown",  () => isSeeking = true);
-  npScrubber.addEventListener("touchstart", () => isSeeking = true, { passive: true });
-  npScrubber.addEventListener("input",  () => document.getElementById("npCurrent").textContent = fmtTime(+npScrubber.value));
-  npScrubber.addEventListener("change", () => { audioPlayer.currentTime = +npScrubber.value; isSeeking = false; });
-
-  function togglePlay() {
-    if (audioPlayer.paused) audioPlayer.play().catch(() => {});
-    else audioPlayer.pause();
-  }
-  function seekRel(secs) {
-    audioPlayer.currentTime = Math.max(0, Math.min(audioPlayer.duration || 0, audioPlayer.currentTime + secs));
-  }
-
-  function playTrack(url, title, metaStr, btn) {
-    if (activeBtn) { activeBtn.textContent = "▶"; activeBtn.classList.remove("playing"); }
-    audioPlayer.src = url;
-    audioPlayer.play().catch(() => {});
-    document.getElementById("npTitle").textContent = title;
-    document.getElementById("npMeta").textContent  = metaStr;
-    nowPlaying.classList.add("visible");
-    activeBtn = btn;
-    btn.textContent = "■";
-    btn.classList.add("playing");
-  }
-
-  // ── Library ───────────────────────────────────────────────────────────────────
-  async function loadLibrary() {
-    const el = document.getElementById("libraryList");
-    el.innerHTML = '<p class="empty">Loading…</p>';
-
-    let items;
-    try {
-      // Always read the manifest — works both locally (Flask serves it) and on GitHub Pages
-      const r = await fetch(`${staticBase}/generated_audio/library.json?t=${Date.now()}`);
-      items = await r.json();
-    } catch {
-      el.innerHTML = '<p class="empty">Could not load library.</p>';
-      return;
-    }
-
-    if (!items.length) { el.innerHTML = '<p class="empty">No recordings yet.</p>'; return; }
-
-    el.innerHTML = "";
-    items.forEach(item => {
-      const audioUrl = `${staticBase}/generated_audio/${item.filename}`;
-      const date = new Date(item.created_at * 1000).toLocaleDateString(undefined, {
-        month: "short", day: "numeric", year: "numeric",
-      });
-      const metaStr = `${formatDuration(item.duration)} · ${escHtml(item.voice)} · ${date}`;
-
-      const row = document.createElement("div");
-      row.className = "lib-item";
-      row.innerHTML = `
+        const row = document.createElement("div");
+        row.className = "lib-item";
+        row.innerHTML = `
         <button class="lib-play" title="Play">▶</button>
         <div class="lib-info">
           <div class="lib-title">${escHtml(item.title)}</div>
@@ -535,283 +890,284 @@
         </div>
         ${serverOnline ? `<button class="lib-del" title="Delete" data-filename="${escHtml(item.filename)}">🗑</button>` : ""}
       `;
-      row.querySelector(".lib-play").addEventListener("click", function() {
-        playTrack(audioUrl, item.title, metaStr, this);
-      });
-      if (serverOnline) {
-        row.querySelector(".lib-del").addEventListener("click", function() {
-          deleteItem(item.filename, this);
+        row.querySelector(".lib-play").addEventListener("click", function () {
+          playTrack(audioUrl, item.title, metaStr, this);
         });
-      }
-      el.appendChild(row);
-    });
-  }
-
-  function deleteItem(filename, btn) {
-    if (!confirm("Delete this recording?")) return;
-    btn.disabled = true;
-    fetch(`${apiBase}/api/audio/${filename}`, { method: "DELETE" })
-      .then(r => r.json())
-      .then(d => { if (d.error) { alert(d.error); btn.disabled = false; } else loadLibrary(); })
-      .catch(() => { btn.disabled = false; alert("Delete failed."); });
-  }
-
-  // ── Ambient mixer ──────────────────────────────────────────────────────────────
-  const ambientTracks = {};
-  // No Web Audio API — use native <audio>.volume directly so iOS keeps playing on screen lock.
-  // Web Audio API (createMediaElementSource) suspends on iOS lock screen and can't be revived.
-
-  async function loadSounds() {
-    const container = document.getElementById("soundRows");
-    let sounds;
-    try {
-      const url = serverOnline ? `${apiBase}/api/sounds` : `${staticBase}/api/sounds`;
-      // Fallback: build list from known sounds folder
-      if (serverOnline) {
-        const r = await fetch(`${apiBase}/api/sounds`);
-        sounds = await r.json();
-      } else {
-        // On GitHub Pages we can't list a directory, so fetch a known sounds manifest or
-        // hardcode the list based on what's in the repo
-        const r = await fetch(`${staticBase}/sounds/index.json`).catch(() => null);
-        if (r && r.ok) {
-          sounds = await r.json();
-        } else {
-          container.innerHTML = '<p class="empty">Connect to the local server to load ambient sounds.</p>';
-          return;
+        if (serverOnline) {
+          row.querySelector(".lib-del").addEventListener("click", function () {
+            deleteItem(item.filename, this);
+          });
         }
-      }
-    } catch {
-      container.innerHTML = '<p class="empty">Could not load sounds.</p>';
-      return;
+        el.appendChild(row);
+      });
     }
 
-    if (!sounds.length) { container.innerHTML = '<p class="empty">No sounds found.</p>'; return; }
+    function deleteItem(filename, btn) {
+      if (!confirm("Delete this recording?")) return;
+      btn.disabled = true;
+      fetch(`${apiBase}/api/audio/${filename}`, { method: "DELETE" })
+        .then(r => r.json())
+        .then(d => { if (d.error) { alert(d.error); btn.disabled = false; } else loadLibrary(); })
+        .catch(() => { btn.disabled = false; alert("Delete failed."); });
+    }
 
-    container.innerHTML = "";
-    const urlParams = new URLSearchParams(location.search);
-    // Determine if any sound param is present in the URL
-    const hasPresetParams = sounds.some(s => urlParams.has(s.name));
-    let anyPreset = false;
+    // ── Ambient mixer ──────────────────────────────────────────────────────────────
+    const ambientTracks = {};
+    // No Web Audio API — use native <audio>.volume directly so iOS keeps playing on screen lock.
+    // Web Audio API (createMediaElementSource) suspends on iOS lock screen and can't be revived.
 
-    sounds.forEach(s => {
-      const { label, icon } = soundMeta(s.name);
-      const presetVal = urlParams.get(s.name);
-      // When preset URL is used, sounds not mentioned default to 0 (silent)
-      const initVol = presetVal !== null
-        ? Math.min(1, Math.max(0, parseFloat(presetVal) / 100))
-        : hasPresetParams ? 0 : 0.3;
-      if (presetVal !== null) anyPreset = true;
+    async function loadSounds() {
+      const container = document.getElementById("soundRows");
+      let sounds;
+      try {
+        const url = serverOnline ? `${apiBase}/api/sounds` : `${staticBase}/api/sounds`;
+        // Fallback: build list from known sounds folder
+        if (serverOnline) {
+          const r = await fetch(`${apiBase}/api/sounds`);
+          sounds = await r.json();
+        } else {
+          // On GitHub Pages we can't list a directory, so fetch a known sounds manifest or
+          // hardcode the list based on what's in the repo
+          const r = await fetch(`${staticBase}/sounds/index.json`).catch(() => null);
+          if (r && r.ok) {
+            sounds = await r.json();
+          } else {
+            container.innerHTML = '<p class="empty">Connect to the local server to load ambient sounds.</p>';
+            return;
+          }
+        }
+      } catch {
+        container.innerHTML = '<p class="empty">Could not load sounds.</p>';
+        return;
+      }
 
-      const row = document.createElement("div");
-      row.className = "sound-row";
-      row.id = `srow-${s.filename}`;
-      row.innerHTML = `
+      if (!sounds.length) { container.innerHTML = '<p class="empty">No sounds found.</p>'; return; }
+
+      container.innerHTML = "";
+      const urlParams = new URLSearchParams(location.search);
+      // Determine if any sound param is present in the URL
+      const hasPresetParams = sounds.some(s => urlParams.has(s.name));
+      let anyPreset = false;
+
+      sounds.forEach(s => {
+        const { label, icon } = soundMeta(s.name);
+        const presetVal = urlParams.get(s.name);
+        // When preset URL is used, sounds not mentioned default to 0 (silent)
+        const initVol = presetVal !== null
+          ? Math.min(1, Math.max(0, parseFloat(presetVal) / 100))
+          : hasPresetParams ? 0 : 0.1;
+        if (presetVal !== null) anyPreset = true;
+
+        const row = document.createElement("div");
+        row.className = "sound-row";
+        row.id = `srow-${s.filename}`;
+        row.innerHTML = `
         <span class="sound-icon">${icon}</span>
         <span class="sound-name">${escHtml(label)}</span>
         <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="${initVol}" disabled />
         <span class="sound-vol-val" id="vol-${s.filename}">${Math.round(initVol * 100)}%</span>
       `;
-      row.querySelector(".sound-vol").addEventListener("input", e => onVolumeChange(s.filename, e.target.value));
-      container.appendChild(row);
+        row.querySelector(".sound-vol").addEventListener("input", e => onVolumeChange(s.filename, e.target.value));
+        container.appendChild(row);
 
-      const soundUrl = serverOnline
-        ? `${apiBase}/sounds/${s.filename}`
-        : `${staticBase}/sounds/${s.filename}`;
-      const audio = new Audio(soundUrl);
-      audio.loop = true;
-      audio.preload = "none";
-      ambientTracks[s.filename] = { audio, initVol };
-      // Re-apply volume on canplay — preload:none can reset volume when the browser first fetches the file
-      audio.addEventListener("canplay", () => {
-        audio.volume = ambientTracks[s.filename]?.initVol ?? 0.3;
+        const soundUrl = serverOnline
+          ? `${apiBase}/sounds/${s.filename}`
+          : `${staticBase}/sounds/${s.filename}`;
+        const audio = new Audio(soundUrl);
+        audio.loop = true;
+        audio.preload = "none";
+        ambientTracks[s.filename] = { audio, initVol };
+        // Re-apply volume on canplay — preload:none can reset volume when the browser first fetches the file
+        audio.addEventListener("canplay", () => {
+          audio.volume = ambientTracks[s.filename]?.initVol ?? 0.1;
+        });
       });
-    });
 
-    if (anyPreset) {
-      // Pre-check the toggle visually. Defer actual play until first user tap
-      // because iOS blocks audio.play() without a user gesture.
-      const toggle = document.getElementById("mixerEnabled");
-      toggle.checked = true;
-      const startOnGesture = () => {
-        document.removeEventListener("touchstart", startOnGesture);
-        document.removeEventListener("mousedown", startOnGesture);
-        if (toggle.checked) onMixerToggle();
-      };
-      document.addEventListener("touchstart", startOnGesture, { once: true });
-      document.addEventListener("mousedown", startOnGesture, { once: true });
+      if (anyPreset) {
+        // Pre-check the toggle visually. Defer actual play until first user tap
+        // because iOS blocks audio.play() without a user gesture.
+        const toggle = document.getElementById("mixerEnabled");
+        toggle.checked = true;
+        const startOnGesture = () => {
+          document.removeEventListener("touchstart", startOnGesture);
+          document.removeEventListener("mousedown", startOnGesture);
+          if (toggle.checked) onMixerToggle();
+        };
+        document.addEventListener("touchstart", startOnGesture, { once: true });
+        document.addEventListener("mousedown", startOnGesture, { once: true });
+      }
     }
-  }
 
-  function onMixerToggle() {
-    const enabled = document.getElementById("mixerEnabled").checked;
+    function onMixerToggle() {
+      const enabled = document.getElementById("mixerEnabled").checked;
 
-    Object.entries(ambientTracks).forEach(([filename, track]) => {
-      const row    = document.getElementById(`srow-${filename}`);
-      const slider = row?.querySelector(".sound-vol");
-      if (enabled) {
-        const vol = slider ? parseFloat(slider.value) : (track.initVol ?? 0.3);
-        // Set volume before and after play — preload:none delays media load so
-        // the volume assigned before play can be reset when the browser fetches the file.
-        track.audio.volume = vol;
-        track.audio.play().then(() => { track.audio.volume = vol; }).catch(() => {});
-        row?.classList.add("active");
-        if (slider) slider.disabled = false;
-      } else {
-        track.audio.pause();
-        row?.classList.remove("active");
-        if (slider) slider.disabled = true;
-      }
-    });
-  }
-
-  function onVolumeChange(filename, value) {
-    const track = ambientTracks[filename];
-    const vol = parseFloat(value);
-    if (track) { track.audio.volume = vol; track.initVol = vol; }
-    const label = document.getElementById(`vol-${filename}`);
-    if (label) label.textContent = Math.round(vol * 100) + "%";
-  }
-
-  // ── Preset links ──────────────────────────────────────────────────────────────
-  function copyPresetLink() {
-    const p = new URLSearchParams();
-    Object.entries(ambientTracks).forEach(([filename, _]) => {
-      const name = filename.replace(/\.[^.]+$/, ""); // strip extension → "rain1"
-      const slider = document.querySelector(`#srow-${filename} .sound-vol`);
-      if (slider) {
-        const pct = Math.round(parseFloat(slider.value) * 100);
-        if (pct > 0) p.set(name, pct);
-      }
-    });
-    const url = `${location.origin}${location.pathname}${p.toString() ? "?" + p.toString() : ""}`;
-    navigator.clipboard.writeText(url).then(() => {
-      const btn = document.getElementById("presetCopyBtn");
-      const orig = btn.textContent;
-      btn.textContent = "Copied!";
-      btn.classList.add("copied");
-      setTimeout(() => { btn.textContent = orig; btn.classList.remove("copied"); }, 2000);
-    }).catch(() => {
-      prompt("Copy this link:", url);
-    });
-  }
-
-  // ── Generate (local-server only) ──────────────────────────────────────────────
-  async function loadVoices() {
-    const r = await fetch(`${apiBase}/api/voices`);
-    const voices = await r.json();
-    const sel = document.getElementById("genVoice");
-    const groups = {};
-    voices.forEach(v => { (groups[v.lang] = groups[v.lang] || []).push(v); });
-    Object.entries(groups).forEach(([lang, list]) => {
-      const og = document.createElement("optgroup");
-      og.label = lang;
-      list.forEach(v => {
-        const opt = document.createElement("option");
-        opt.value = v.id;
-        opt.textContent = v.name + (v.recommended ? " ⭐" : "");
-        if (v.recommended) opt.selected = true;
-        og.appendChild(opt);
+      Object.entries(ambientTracks).forEach(([filename, track]) => {
+        const row = document.getElementById(`srow-${filename}`);
+        const slider = row?.querySelector(".sound-vol");
+        if (enabled) {
+          const vol = slider ? parseFloat(slider.value) : (track.initVol ?? 0.1);
+          // Set volume before and after play — preload:none delays media load so
+          // the volume assigned before play can be reset when the browser fetches the file.
+          track.audio.volume = vol;
+          track.audio.play().then(() => { track.audio.volume = vol; }).catch(() => { });
+          row?.classList.add("active");
+          if (slider) slider.disabled = false;
+        } else {
+          track.audio.pause();
+          row?.classList.remove("active");
+          if (slider) slider.disabled = true;
+        }
       });
-      sel.appendChild(og);
-    });
-  }
+    }
 
-  let pollTimer = null;
+    function onVolumeChange(filename, value) {
+      const track = ambientTracks[filename];
+      const vol = parseFloat(value);
+      if (track) { track.audio.volume = vol; track.initVol = vol; }
+      const label = document.getElementById(`vol-${filename}`);
+      if (label) label.textContent = Math.round(vol * 100) + "%";
+    }
 
-  function startGeneration() {
-    const text = document.getElementById("genText").value.trim();
-    const errorEl = document.getElementById("genError");
-    errorEl.classList.remove("visible");
-    if (!text) { errorEl.textContent = "Paste some text first."; errorEl.classList.add("visible"); return; }
+    // ── Preset links ──────────────────────────────────────────────────────────────
+    function copyPresetLink() {
+      const p = new URLSearchParams();
+      Object.entries(ambientTracks).forEach(([filename, _]) => {
+        const name = filename.replace(/\.[^.]+$/, ""); // strip extension → "rain1"
+        const slider = document.querySelector(`#srow-${filename} .sound-vol`);
+        if (slider) {
+          const pct = Math.round(parseFloat(slider.value) * 100);
+          if (pct > 0) p.set(name, pct);
+        }
+      });
+      const url = `${location.origin}${location.pathname}${p.toString() ? "?" + p.toString() : ""}`;
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById("presetCopyBtn");
+        const orig = btn.textContent;
+        btn.textContent = "Copied!";
+        btn.classList.add("copied");
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove("copied"); }, 2000);
+      }).catch(() => {
+        prompt("Copy this link:", url);
+      });
+    }
 
-    const btn = document.getElementById("genBtn");
-    btn.disabled = true;
-    const progressWrap = document.getElementById("genProgress");
-    progressWrap.classList.add("visible");
-    setProgress(0, "Sending…");
+    // ── Generate (local-server only) ──────────────────────────────────────────────
+    async function loadVoices() {
+      const r = await fetch(`${apiBase}/api/voices`);
+      const voices = await r.json();
+      const sel = document.getElementById("genVoice");
+      const groups = {};
+      voices.forEach(v => { (groups[v.lang] = groups[v.lang] || []).push(v); });
+      Object.entries(groups).forEach(([lang, list]) => {
+        const og = document.createElement("optgroup");
+        og.label = lang;
+        list.forEach(v => {
+          const opt = document.createElement("option");
+          opt.value = v.id;
+          opt.textContent = v.name + (v.recommended ? " ⭐" : "");
+          if (v.recommended) opt.selected = true;
+          og.appendChild(opt);
+        });
+        sel.appendChild(og);
+      });
+    }
 
-    fetch(`${apiBase}/api/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text,
-        voice: document.getElementById("genVoice").value,
-        speed: parseFloat(document.getElementById("genSpeed").value),
-      }),
-    })
-      .then(r => r.json())
-      .then(d => { if (d.error) { genError(d.error, btn); return; } pollStatus(d.job_id, btn); })
-      .catch(e => genError(e.message, btn));
-  }
+    let pollTimer = null;
 
-  function pollStatus(jobId, btn) {
-    pollTimer = setInterval(() => {
-      fetch(`${apiBase}/api/status/${jobId}`)
+    function startGeneration() {
+      const text = document.getElementById("genText").value.trim();
+      const errorEl = document.getElementById("genError");
+      errorEl.classList.remove("visible");
+      if (!text) { errorEl.textContent = "Paste some text first."; errorEl.classList.add("visible"); return; }
+
+      const btn = document.getElementById("genBtn");
+      btn.disabled = true;
+      const progressWrap = document.getElementById("genProgress");
+      progressWrap.classList.add("visible");
+      setProgress(0, "Sending…");
+
+      fetch(`${apiBase}/api/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text,
+          voice: document.getElementById("genVoice").value,
+          speed: parseFloat(document.getElementById("genSpeed").value),
+        }),
+      })
         .then(r => r.json())
-        .then(job => {
-          if (job.status === "processing") {
-            const pct = Math.max(2, job.progress);
-            setProgress(pct, pct < 10 ? "Loading model…" : `Synthesizing… (${pct}%)`);
-          }
-          if (job.status === "done") {
-            clearInterval(pollTimer);
-            setProgress(100, "Done!");
-            btn.disabled = false;
-            loadLibrary();
-            document.getElementById("genText").value = "";
-            setTimeout(() => {
-              document.getElementById("genProgress").classList.remove("visible");
-              switchTab("library", document.getElementById("tab-btn-library"));
-            }, 1200);
-          }
-          if (job.status === "error") {
-            clearInterval(pollTimer);
-            genError(job.error || "Unknown error", btn);
-          }
-        })
-        .catch(e => { clearInterval(pollTimer); genError(e.message, btn); });
-    }, 1500);
-  }
-
-  function setProgress(pct, label) {
-    document.getElementById("genBar").style.width = pct + "%";
-    document.getElementById("genPct").textContent  = pct + "%";
-    document.getElementById("genStatusText").textContent = label;
-  }
-
-  function genError(msg, btn) {
-    document.getElementById("genProgress").classList.remove("visible");
-    const errorEl = document.getElementById("genError");
-    errorEl.textContent = "Error: " + msg;
-    errorEl.classList.add("visible");
-    if (btn) btn.disabled = false;
-  }
-
-  // ── Boot ──────────────────────────────────────────────────────────────────────
-  async function init() {
-    staticBase = resolveStaticBase();
-    const foundServer = await detectServer();
-
-    if (foundServer) {
-      apiBase = foundServer;
-      serverOnline = true;
-      document.getElementById("serverBadge").textContent = "● local";
-      document.getElementById("serverBadge").className   = "server-badge online";
-      document.getElementById("tab-btn-generate").classList.remove("hidden");
-      loadVoices();
+        .then(d => { if (d.error) { genError(d.error, btn); return; } pollStatus(d.job_id, btn); })
+        .catch(e => genError(e.message, btn));
     }
 
-    loadLibrary();
-    loadSounds();
-  }
+    function pollStatus(jobId, btn) {
+      pollTimer = setInterval(() => {
+        fetch(`${apiBase}/api/status/${jobId}`)
+          .then(r => r.json())
+          .then(job => {
+            if (job.status === "processing") {
+              const pct = Math.max(2, job.progress);
+              setProgress(pct, pct < 10 ? "Loading model…" : `Synthesizing… (${pct}%)`);
+            }
+            if (job.status === "done") {
+              clearInterval(pollTimer);
+              setProgress(100, "Done!");
+              btn.disabled = false;
+              loadLibrary();
+              document.getElementById("genText").value = "";
+              setTimeout(() => {
+                document.getElementById("genProgress").classList.remove("visible");
+                switchTab("library", document.getElementById("tab-btn-library"));
+              }, 1200);
+            }
+            if (job.status === "error") {
+              clearInterval(pollTimer);
+              genError(job.error || "Unknown error", btn);
+            }
+          })
+          .catch(e => { clearInterval(pollTimer); genError(e.message, btn); });
+      }, 1500);
+    }
 
-  init();
+    function setProgress(pct, label) {
+      document.getElementById("genBar").style.width = pct + "%";
+      document.getElementById("genPct").textContent = pct + "%";
+      document.getElementById("genStatusText").textContent = label;
+    }
 
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/read-4-sleep/static/sw.js", { scope: "/read-4-sleep/" })
-      .catch(() => {});
-  }
-</script>
+    function genError(msg, btn) {
+      document.getElementById("genProgress").classList.remove("visible");
+      const errorEl = document.getElementById("genError");
+      errorEl.textContent = "Error: " + msg;
+      errorEl.classList.add("visible");
+      if (btn) btn.disabled = false;
+    }
+
+    // ── Boot ──────────────────────────────────────────────────────────────────────
+    async function init() {
+      staticBase = resolveStaticBase();
+      const foundServer = await detectServer();
+
+      if (foundServer) {
+        apiBase = foundServer;
+        serverOnline = true;
+        document.getElementById("serverBadge").textContent = "● local";
+        document.getElementById("serverBadge").className = "server-badge online";
+        document.getElementById("tab-btn-generate").classList.remove("hidden");
+        loadVoices();
+      }
+
+      loadLibrary();
+      loadSounds();
+    }
+
+    init();
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/read-4-sleep/static/sw.js", { scope: "/read-4-sleep/" })
+        .catch(() => { });
+    }
+  </script>
 </body>
+
 </html>

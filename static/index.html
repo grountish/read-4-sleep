@@ -1106,7 +1106,7 @@
             row.innerHTML = `
             <span class="sound-icon">${icon}</span>
             <span class="sound-name">${escHtml(label)}</span>
-            <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="0.3"
+            <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="0.1"
               disabled
               oninput="onVolumeChange('${s.filename}', this.value)"
               title="Volume" />
@@ -1117,7 +1117,7 @@
             const audio = new Audio(`/sounds/${s.filename}`);
             audio.loop = true;
             audio.preload = "none";
-            audio.volume = 0.3;
+            audio.volume = 0.1;
             ambientTracks[s.filename] = { audio };
           });
         });
