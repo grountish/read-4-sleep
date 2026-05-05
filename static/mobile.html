@@ -261,6 +261,15 @@
       border: 1px solid rgba(248,113,113,0.25); border-radius: 8px;
     }
     .gen-error.visible { display: block; }
+
+    .preset-btn {
+      display: block; width: 100%; margin-top: 1.25rem;
+      padding: 0.65rem; border: 1px solid var(--border); border-radius: 8px;
+      background: transparent; color: var(--muted); font-size: 0.82rem;
+      cursor: pointer; transition: border-color 0.15s, color 0.15s;
+    }
+    .preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .preset-btn.copied { border-color: var(--success); color: var(--success); }
   </style>
 </head>
 <body>
@@ -296,6 +305,7 @@
     </label>
   </div>
   <div class="sound-rows" id="soundRows"><p class="empty">Loading…</p></div>
+  <button class="preset-btn" id="presetCopyBtn" onclick="copyPresetLink()">Copy preset link</button>
 </div>
 
 <!-- Generate (shown only when local server is reachable) -->
@@ -591,16 +601,24 @@
     if (!sounds.length) { container.innerHTML = '<p class="empty">No sounds found.</p>'; return; }
 
     container.innerHTML = "";
+    const urlParams = new URLSearchParams(location.search);
+    let anyPreset = false;
+
     sounds.forEach(s => {
       const { label, icon } = soundMeta(s.name);
+      // s.name is filename without extension, e.g. "rain1"
+      const presetVal = urlParams.get(s.name);
+      const initVol = presetVal !== null ? Math.min(1, Math.max(0, parseFloat(presetVal) / 100)) : 0.3;
+      if (presetVal !== null) anyPreset = true;
+
       const row = document.createElement("div");
       row.className = "sound-row";
       row.id = `srow-${s.filename}`;
       row.innerHTML = `
         <span class="sound-icon">${icon}</span>
         <span class="sound-name">${escHtml(label)}</span>
-        <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="0.3" disabled />
-        <span class="sound-vol-val" id="vol-${s.filename}">30%</span>
+        <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="${initVol}" disabled />
+        <span class="sound-vol-val" id="vol-${s.filename}">${Math.round(initVol * 100)}%</span>
       `;
       row.querySelector(".sound-vol").addEventListener("input", e => onVolumeChange(s.filename, e.target.value));
       container.appendChild(row);
@@ -613,6 +631,12 @@
       audio.preload = "none";
       ambientTracks[s.filename] = { audio, gainNode: null, sourceNode: null };
     });
+
+    if (anyPreset) {
+      const toggle = document.getElementById("mixerEnabled");
+      toggle.checked = true;
+      onMixerToggle();
+    }
   }
 
   function onMixerToggle() {
@@ -652,6 +676,29 @@
     if (track?.gainNode) track.gainNode.gain.value = parseFloat(value);
     const label = document.getElementById(`vol-${filename}`);
     if (label) label.textContent = Math.round(value * 100) + "%";
+  }
+
+  // ── Preset links ──────────────────────────────────────────────────────────────
+  function copyPresetLink() {
+    const p = new URLSearchParams();
+    Object.entries(ambientTracks).forEach(([filename, _]) => {
+      const name = filename.replace(/\.[^.]+$/, ""); // strip extension → "rain1"
+      const slider = document.querySelector(`#srow-${filename} .sound-vol`);
+      if (slider) {
+        const pct = Math.round(parseFloat(slider.value) * 100);
+        if (pct > 0) p.set(name, pct);
+      }
+    });
+    const url = `${location.origin}${location.pathname}${p.toString() ? "?" + p.toString() : ""}`;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById("presetCopyBtn");
+      const orig = btn.textContent;
+      btn.textContent = "Copied!";
+      btn.classList.add("copied");
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove("copied"); }, 2000);
+    }).catch(() => {
+      prompt("Copy this link:", url);
+    });
   }
 
   // ── Generate (local-server only) ──────────────────────────────────────────────
