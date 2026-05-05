@@ -265,47 +265,111 @@
     }
 
     /* Current player */
-    .player-card {
-      display: none;
-    }
-
-    .player-card.visible {
-      display: block;
-    }
+    .player-card { display: none; }
+    .player-card.visible { display: block; }
 
     .player-card h2 {
-      font-size: 1rem;
+      font-size: 0.8rem;
       font-weight: 600;
-      color: #fff;
-      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
     }
 
-    audio {
-      width: 100%;
+    .sp-player {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .sp-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .sp-art {
+      width: 52px; height: 52px;
       border-radius: 8px;
-      outline: none;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .sp-text { flex: 1; min-width: 0; }
+    .sp-title { font-size: 0.95rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sp-meta  { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+
+    .sp-scrubber-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .sp-time { font-size: 0.72rem; color: var(--muted); min-width: 3rem; }
+    .sp-time.right { text-align: right; }
+
+    .sp-scrubber {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 99px;
+      background: var(--border);
+      accent-color: #fff;
+      cursor: pointer;
+    }
+    .sp-scrubber::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .sp-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.75rem;
+    }
+
+    .sp-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text);
+      display: flex; align-items: center; justify-content: center;
+      padding: 0; transition: color 0.15s, transform 0.1s;
+    }
+    .sp-btn:hover { color: #fff; }
+    .sp-btn:active { transform: scale(0.92); }
+    .sp-btn.primary {
+      width: 48px; height: 48px;
+      background: #fff; border-radius: 50%; color: #000;
+    }
+    .sp-btn.primary:hover { background: #e0e0e0; color: #000; }
+
+    .sp-footer {
+      display: flex;
+      justify-content: flex-end;
     }
 
     .download-btn {
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      margin-top: 1rem;
-      padding: 0.55rem 1.1rem;
+      padding: 0.45rem 1rem;
       background: transparent;
       border: 1px solid var(--accent);
       border-radius: 8px;
       color: var(--accent);
-      font-size: 0.88rem;
+      font-size: 0.82rem;
       font-weight: 600;
       text-decoration: none;
       cursor: pointer;
       transition: background 0.2s;
     }
-
-    .download-btn:hover {
-      background: rgba(124, 140, 248, 0.12);
-    }
+    .download-btn:hover { background: rgba(124,140,248,0.12); }
 
     /* Error */
     .error-msg {
@@ -622,10 +686,48 @@
 
   <!-- Current player -->
   <div class="card player-card" id="playerCard">
-    <h2>🎧 Your sleep audio is ready</h2>
-    <audio id="audioPlayer" controls></audio>
-    <br />
-    <a class="download-btn" id="downloadLink" download>⬇ Download WAV</a>
+    <h2>Now playing</h2>
+    <audio id="audioPlayer"></audio>
+
+    <div class="sp-player">
+      <div class="sp-info">
+        <div class="sp-art">🌙</div>
+        <div class="sp-text">
+          <div class="sp-title" id="spTitle">—</div>
+          <div class="sp-meta"  id="spMeta"></div>
+        </div>
+      </div>
+
+      <div class="sp-scrubber-row">
+        <span class="sp-time" id="spCurrent">0:00</span>
+        <input type="range" class="sp-scrubber" id="spScrubber" min="0" value="0" step="1" />
+        <span class="sp-time right" id="spDuration">0:00</span>
+      </div>
+
+      <div class="sp-controls">
+        <button class="sp-btn" onclick="seekRel(-15)" title="−15s">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.99 5V1l-5 5 5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6h-2c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+            <text x="7.5" y="15.5" font-size="5.5" font-family="sans-serif" font-weight="bold" fill="currentColor">15</text>
+          </svg>
+        </button>
+        <button class="sp-btn primary" id="spPlayPause" onclick="togglePlay()">
+          <svg id="spPlayIcon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+        <button class="sp-btn" onclick="seekRel(15)" title="+15s">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.01 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/>
+            <text x="7.5" y="15.5" font-size="5.5" font-family="sans-serif" font-weight="bold" fill="currentColor">15</text>
+          </svg>
+        </button>
+      </div>
+
+      <div class="sp-footer">
+        <a class="download-btn" id="downloadLink" download>⬇ Download</a>
+      </div>
+    </div>
   </div>
 
 
@@ -668,12 +770,52 @@
     const statusText = document.getElementById("statusText");
     const statusDot = document.getElementById("statusDot");
     const errorMsg = document.getElementById("errorMsg");
-    const playerCard = document.getElementById("playerCard");
+    const playerCard  = document.getElementById("playerCard");
     const audioPlayer = document.getElementById("audioPlayer");
     const downloadLink = document.getElementById("downloadLink");
-    const libraryList = document.getElementById("libraryList");
+    const libraryList  = document.getElementById("libraryList");
+    const spScrubber   = document.getElementById("spScrubber");
+    const spPlayIcon   = document.getElementById("spPlayIcon");
 
     let pollTimer = null;
+    let spSeeking = false;
+
+    const PLAY_PATH  = "M8 5v14l11-7z";
+    const PAUSE_PATH = "M6 19h4V5H6v14zm8-14v14h4V5h-4z";
+
+    function fmtTime(s) {
+      if (!isFinite(s)) return "0:00";
+      const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+      return `${m}:${sec.toString().padStart(2, "0")}`;
+    }
+
+    audioPlayer.addEventListener("timeupdate", () => {
+      if (spSeeking) return;
+      spScrubber.value = audioPlayer.currentTime;
+      document.getElementById("spCurrent").textContent = fmtTime(audioPlayer.currentTime);
+    });
+    audioPlayer.addEventListener("loadedmetadata", () => {
+      spScrubber.max = Math.floor(audioPlayer.duration);
+      document.getElementById("spDuration").textContent = fmtTime(audioPlayer.duration);
+    });
+    audioPlayer.addEventListener("play",  () => spPlayIcon.querySelector("path").setAttribute("d", PAUSE_PATH));
+    audioPlayer.addEventListener("pause", () => spPlayIcon.querySelector("path").setAttribute("d", PLAY_PATH));
+    audioPlayer.addEventListener("ended", () => {
+      spPlayIcon.querySelector("path").setAttribute("d", PLAY_PATH);
+      document.querySelectorAll(".lib-play").forEach(b => b.textContent = "▶");
+    });
+
+    spScrubber.addEventListener("mousedown",  () => spSeeking = true);
+    spScrubber.addEventListener("input",  () => document.getElementById("spCurrent").textContent = fmtTime(+spScrubber.value));
+    spScrubber.addEventListener("change", () => { audioPlayer.currentTime = +spScrubber.value; spSeeking = false; });
+
+    function togglePlay() {
+      if (audioPlayer.paused) audioPlayer.play().catch(() => {});
+      else audioPlayer.pause();
+    }
+    function seekRel(secs) {
+      audioPlayer.currentTime = Math.max(0, Math.min(audioPlayer.duration || 0, audioPlayer.currentTime + secs));
+    }
 
     // ── Text stats ──────────────────────────────────────────────────────────────
 
@@ -808,9 +950,7 @@
               statusDot.style.background = "var(--success)";
 
               const audioUrl = `/api/audio/${job.filename}`;
-              audioPlayer.src = audioUrl;
-              downloadLink.href = audioUrl;
-              downloadLink.download = "sleep-audio.wav";
+              loadPlayer(audioUrl, "Your new recording", job.filename);
               playerCard.classList.add("visible");
               generateBtn.disabled = false;
               audioPlayer.play().catch(() => { });
@@ -874,16 +1014,23 @@
         });
     }
 
-    function playLibItem(url, btn) {
-      // Reset all play buttons
-      document.querySelectorAll(".lib-play").forEach(b => b.textContent = "▶");
+    function loadPlayer(url, title, filename) {
       audioPlayer.src = url;
       downloadLink.href = url;
-      downloadLink.download = "sleep-audio.wav";
+      downloadLink.download = filename;
+      document.getElementById("spTitle").textContent = title;
+    }
+
+    function playLibItem(url, btn) {
+      document.querySelectorAll(".lib-play").forEach(b => b.textContent = "▶");
+      const row   = btn.closest(".lib-item");
+      const title = row?.querySelector(".lib-title")?.textContent || "Recording";
+      const fname = row?.dataset.filename || "sleep-audio";
+      loadPlayer(url, title, fname);
       playerCard.classList.add("visible");
-      audioPlayer.play().catch(() => { });
+      audioPlayer.play().catch(() => {});
       btn.textContent = "■";
-      audioPlayer.onended = () => { btn.textContent = "▶"; };
+      audioPlayer.addEventListener("ended", () => { btn.textContent = "▶"; }, { once: true });
     }
 
     function convertToMp3(filename, btn) {

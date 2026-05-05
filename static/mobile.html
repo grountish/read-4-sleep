@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Read for Sleep</title>
+  <link rel="manifest" href="/read-4-sleep/static/manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Read4Sleep" />
+  <meta name="theme-color" content="#0d1117" />
   <style>
     :root {
       --bg: #0d1117;
@@ -771,6 +776,11 @@
   }
 
   init();
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/read-4-sleep/static/sw.js", { scope: "/read-4-sleep/" })
+      .catch(() => {});
+  }
 </script>
 </body>
 </html>
