@@ -472,6 +472,7 @@
       const row    = document.getElementById(`srow-${filename}`);
       const slider = row?.querySelector(".sound-vol");
       if (enabled) {
+        if (slider) track.audio.volume = parseFloat(slider.value);
         track.audio.play().catch(() => {});
         row?.classList.add("active");
         if (slider) slider.disabled = false;
