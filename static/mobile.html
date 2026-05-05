@@ -558,20 +558,8 @@
 
   // ── Ambient mixer ──────────────────────────────────────────────────────────────
   const ambientTracks = {};
-  let audioCtx = null;
-
-  // On iOS, Web Audio API is suspended on screen lock UNLESS a native <audio>
-  // element is already playing (holding the audio session open as media playback).
-  // A silent looping <audio> anchors the iOS audio session so the AudioContext
-  // (used for per-track gain control) stays alive through screen lock.
-  const anchor = new Audio();
-  anchor.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
-  anchor.loop = true;
-
-  function getAudioCtx() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    return audioCtx;
-  }
+  // No Web Audio API — use native <audio>.volume directly so iOS keeps playing on screen lock.
+  // Web Audio API (createMediaElementSource) suspends on iOS lock screen and can't be revived.
 
   async function loadSounds() {
     const container = document.getElementById("soundRows");
@@ -629,7 +617,7 @@
       const audio = new Audio(soundUrl);
       audio.loop = true;
       audio.preload = "none";
-      ambientTracks[s.filename] = { audio, gainNode: null, sourceNode: null };
+      ambientTracks[s.filename] = { audio };
     });
 
     if (anyPreset) {
@@ -641,25 +629,12 @@
 
   function onMixerToggle() {
     const enabled = document.getElementById("mixerEnabled").checked;
-    const ctx = getAudioCtx();
-    if (enabled) {
-      anchor.play().catch(() => {});
-      ctx.resume();
-    } else {
-      anchor.pause();
-    }
 
     Object.entries(ambientTracks).forEach(([filename, track]) => {
       const row    = document.getElementById(`srow-${filename}`);
       const slider = row?.querySelector(".sound-vol");
       if (enabled) {
-        if (!track.sourceNode) {
-          track.gainNode   = ctx.createGain();
-          track.sourceNode = ctx.createMediaElementSource(track.audio);
-          track.sourceNode.connect(track.gainNode);
-          track.gainNode.connect(ctx.destination);
-          track.gainNode.gain.value = slider ? parseFloat(slider.value) : 0.3;
-        }
+        track.audio.volume = slider ? parseFloat(slider.value) : 0.3;
         track.audio.play().catch(() => {});
         row?.classList.add("active");
         if (slider) slider.disabled = false;
@@ -673,7 +648,7 @@
 
   function onVolumeChange(filename, value) {
     const track = ambientTracks[filename];
-    if (track?.gainNode) track.gainNode.gain.value = parseFloat(value);
+    if (track?.audio) track.audio.volume = parseFloat(value);
     const label = document.getElementById(`vol-${filename}`);
     if (label) label.textContent = Math.round(value * 100) + "%";
   }
