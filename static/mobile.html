@@ -61,17 +61,77 @@
       display: none;
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      background: var(--surface);
+      background: #111318;
       border-top: 1px solid var(--border);
-      padding: 0.85rem 1.25rem;
+      padding: 0.75rem 1.25rem 1.1rem;
       z-index: 20;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.6rem;
     }
     .now-playing.visible { display: flex; }
-    .np-title { font-size: 0.85rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .np-meta  { font-size: 0.72rem; color: var(--muted); }
-    audio { width: 100%; border-radius: 6px; height: 36px; }
+
+    .np-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .np-art {
+      width: 40px; height: 40px;
+      border-radius: 6px;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .np-text { flex: 1; min-width: 0; }
+    .np-title { font-size: 0.88rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .np-meta  { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+
+    .np-scrubber-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .np-time { font-size: 0.68rem; color: var(--muted); min-width: 2.8rem; }
+    .np-time.right { text-align: right; }
+    .np-scrubber {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 3px;
+      border-radius: 99px;
+      background: var(--border);
+      accent-color: #fff;
+      cursor: pointer;
+    }
+    .np-scrubber::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .np-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+    .np-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text); display: flex; align-items: center; justify-content: center;
+      padding: 0; transition: color 0.15s, transform 0.1s;
+    }
+    .np-btn:active { transform: scale(0.9); }
+    .np-btn svg { display: block; }
+    .np-btn.primary {
+      width: 52px; height: 52px;
+      background: #fff;
+      border-radius: 50%;
+      color: #000;
+    }
+    .np-btn.primary:active { transform: scale(0.93); }
 
     /* Tabs */
     .tabs {
@@ -259,11 +319,44 @@
 
 <!-- Now playing -->
 <div class="now-playing" id="nowPlaying">
-  <div>
-    <div class="np-title" id="npTitle">—</div>
-    <div class="np-meta"  id="npMeta"></div>
+  <audio id="audioPlayer"></audio>
+
+  <div class="np-info">
+    <div class="np-art">🌙</div>
+    <div class="np-text">
+      <div class="np-title" id="npTitle">—</div>
+      <div class="np-meta"  id="npMeta"></div>
+    </div>
   </div>
-  <audio id="audioPlayer" controls></audio>
+
+  <div class="np-scrubber-row">
+    <span class="np-time" id="npCurrent">0:00</span>
+    <input type="range" class="np-scrubber" id="npScrubber" min="0" value="0" step="1" />
+    <span class="np-time right" id="npDuration">0:00</span>
+  </div>
+
+  <div class="np-controls">
+    <!-- Skip back 15s -->
+    <button class="np-btn" onclick="seekRel(-15)" title="−15s">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M11.99 5V1l-5 5 5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6h-2c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+        <text x="7.5" y="15.5" font-size="5.5" font-family="sans-serif" font-weight="bold" fill="currentColor">15</text>
+      </svg>
+    </button>
+    <!-- Play / Pause -->
+    <button class="np-btn primary" id="npPlayPause" onclick="togglePlay()">
+      <svg id="npPlayIcon" width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+    </button>
+    <!-- Skip forward 15s -->
+    <button class="np-btn" onclick="seekRel(15)" title="+15s">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12.01 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/>
+        <text x="7.5" y="15.5" font-size="5.5" font-family="sans-serif" font-weight="bold" fill="currentColor">15</text>
+      </svg>
+    </button>
+  </div>
 </div>
 
 <script>
@@ -337,7 +430,48 @@
   // ── Now playing ───────────────────────────────────────────────────────────────
   const audioPlayer = document.getElementById("audioPlayer");
   const nowPlaying  = document.getElementById("nowPlaying");
+  const npScrubber  = document.getElementById("npScrubber");
+  const npPlayIcon  = document.getElementById("npPlayIcon");
   let activeBtn = null;
+  let isSeeking = false;
+
+  const PLAY_PATH  = "M8 5v14l11-7z";
+  const PAUSE_PATH = "M6 19h4V5H6v14zm8-14v14h4V5h-4z";
+
+  function fmtTime(s) {
+    if (!isFinite(s)) return "0:00";
+    const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  }
+
+  audioPlayer.addEventListener("timeupdate", () => {
+    if (isSeeking) return;
+    npScrubber.value = audioPlayer.currentTime;
+    document.getElementById("npCurrent").textContent = fmtTime(audioPlayer.currentTime);
+  });
+  audioPlayer.addEventListener("loadedmetadata", () => {
+    npScrubber.max = Math.floor(audioPlayer.duration);
+    document.getElementById("npDuration").textContent = fmtTime(audioPlayer.duration);
+  });
+  audioPlayer.addEventListener("play",  () => npPlayIcon.querySelector("path").setAttribute("d", PAUSE_PATH));
+  audioPlayer.addEventListener("pause", () => npPlayIcon.querySelector("path").setAttribute("d", PLAY_PATH));
+  audioPlayer.addEventListener("ended", () => {
+    npPlayIcon.querySelector("path").setAttribute("d", PLAY_PATH);
+    if (activeBtn) { activeBtn.textContent = "▶"; activeBtn.classList.remove("playing"); }
+  });
+
+  npScrubber.addEventListener("mousedown",  () => isSeeking = true);
+  npScrubber.addEventListener("touchstart", () => isSeeking = true, { passive: true });
+  npScrubber.addEventListener("input",  () => document.getElementById("npCurrent").textContent = fmtTime(+npScrubber.value));
+  npScrubber.addEventListener("change", () => { audioPlayer.currentTime = +npScrubber.value; isSeeking = false; });
+
+  function togglePlay() {
+    if (audioPlayer.paused) audioPlayer.play().catch(() => {});
+    else audioPlayer.pause();
+  }
+  function seekRel(secs) {
+    audioPlayer.currentTime = Math.max(0, Math.min(audioPlayer.duration || 0, audioPlayer.currentTime + secs));
+  }
 
   function playTrack(url, title, metaStr, btn) {
     if (activeBtn) { activeBtn.textContent = "▶"; activeBtn.classList.remove("playing"); }
@@ -349,7 +483,6 @@
     activeBtn = btn;
     btn.textContent = "■";
     btn.classList.add("playing");
-    audioPlayer.onended = () => { btn.textContent = "▶"; btn.classList.remove("playing"); };
   }
 
   // ── Library ───────────────────────────────────────────────────────────────────
