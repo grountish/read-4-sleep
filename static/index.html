@@ -928,14 +928,7 @@
 
     // ── Ambient mixer ────────────────────────────────────────────────────────────
 
-    // {filename → {audio: HTMLAudioElement, gainNode: GainNode, sourceNode: MediaElementSourceNode}}
     const ambientTracks = {};
-    let audioCtx = null;
-
-    function getAudioCtx() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      return audioCtx;
-    }
 
     // Friendly display names and icons derived from filename
     function soundMeta(name) {
@@ -974,37 +967,22 @@
           `;
             container.appendChild(row);
 
-            // Pre-create the audio element (but don't play yet)
             const audio = new Audio(`/sounds/${s.filename}`);
             audio.loop = true;
             audio.preload = "none";
-            ambientTracks[s.filename] = { audio, gainNode: null, sourceNode: null };
+            audio.volume = 0.3;
+            ambientTracks[s.filename] = { audio };
           });
         });
     }
 
     function onMixerToggle() {
       const enabled = document.getElementById("mixerEnabled").checked;
-      // Resume AudioContext on first user interaction
-      if (enabled) getAudioCtx().resume();
-
       Object.entries(ambientTracks).forEach(([filename, track]) => {
-        const row = document.getElementById(`srow-${filename}`);
+        const row    = document.getElementById(`srow-${filename}`);
         const slider = row ? row.querySelector(".sound-vol") : null;
-
         if (enabled) {
-          // Wire into Web Audio for gain control if not done yet
-          if (!track.sourceNode) {
-            const ctx = getAudioCtx();
-            track.gainNode = ctx.createGain();
-            track.sourceNode = ctx.createMediaElementSource(track.audio);
-            track.sourceNode.connect(track.gainNode);
-            track.gainNode.connect(ctx.destination);
-            // Set initial gain from slider
-            const vol = slider ? parseFloat(slider.value) : 0.3;
-            track.gainNode.gain.value = vol;
-          }
-          track.audio.play().catch(() => { });
+          track.audio.play().catch(() => {});
           if (row) row.classList.add("active");
           if (slider) slider.disabled = false;
         } else {
@@ -1017,9 +995,7 @@
 
     function onVolumeChange(filename, value) {
       const track = ambientTracks[filename];
-      if (track && track.gainNode) {
-        track.gainNode.gain.value = parseFloat(value);
-      }
+      if (track) track.audio.volume = parseFloat(value);
       const label = document.getElementById(`vol-${filename}`);
       if (label) label.textContent = Math.round(value * 100) + "%";
     }
