@@ -417,11 +417,23 @@
     return audioCtx;
   }
 
-  // A silent looping audio element keeps the iOS audio session alive so the
-  // AudioContext (used for gain control) is not suspended on screen lock.
-  const silence = new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjM2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6urq6v////////////////////////////////8AAAAATGF2YzU2LjQxAAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//MUZAAAAAGkAAAAAAAAA0gAAAAATEFN//MUZAMAAAGkAAAAAAAAA0gAAAAARTMu//MUZAYAAAGkAAAAAAAAA0gAAAAAOTku//MUZAkAAAGkAAAAAAAAA0gAAAAANVVV");
-  silence.loop = true;
-  silence.volume = 0.001;
+  function registerMediaSession() {
+    if (!("mediaSession" in navigator)) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: "Ambient Sounds",
+      artist: "Read for Sleep",
+    });
+    // Keep playback state active so iOS doesn't suspend audio
+    navigator.mediaSession.playbackState = "playing";
+    navigator.mediaSession.setActionHandler("play",  () => {
+      Object.values(ambientTracks).forEach(t => t.audio.play().catch(() => {}));
+      navigator.mediaSession.playbackState = "playing";
+    });
+    navigator.mediaSession.setActionHandler("pause", () => {
+      Object.values(ambientTracks).forEach(t => t.audio.pause());
+      navigator.mediaSession.playbackState = "paused";
+    });
+  }
 
   async function loadSounds() {
     const container = document.getElementById("soundRows");
@@ -477,11 +489,12 @@
 
   function onMixerToggle() {
     const enabled = document.getElementById("mixerEnabled").checked;
+
     if (enabled) {
-      silence.play().catch(() => {});
       getAudioCtx().resume();
+      registerMediaSession();
     } else {
-      silence.pause();
+      if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
     }
 
     Object.entries(ambientTracks).forEach(([filename, track]) => {
