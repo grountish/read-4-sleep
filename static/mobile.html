@@ -590,13 +590,17 @@
 
     container.innerHTML = "";
     const urlParams = new URLSearchParams(location.search);
+    // Determine if any sound param is present in the URL
+    const hasPresetParams = sounds.some(s => urlParams.has(s.name));
     let anyPreset = false;
 
     sounds.forEach(s => {
       const { label, icon } = soundMeta(s.name);
-      // s.name is filename without extension, e.g. "rain1"
       const presetVal = urlParams.get(s.name);
-      const initVol = presetVal !== null ? Math.min(1, Math.max(0, parseFloat(presetVal) / 100)) : 0.3;
+      // When preset URL is used, sounds not mentioned default to 0 (silent)
+      const initVol = presetVal !== null
+        ? Math.min(1, Math.max(0, parseFloat(presetVal) / 100))
+        : hasPresetParams ? 0 : 0.3;
       if (presetVal !== null) anyPreset = true;
 
       const row = document.createElement("div");
