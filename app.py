@@ -52,7 +52,26 @@ def make_title(text: str) -> str:
 
 
 def meta_path(filename: str) -> str:
-    return os.path.join(AUDIO_DIR, filename.replace(".wav", ".json"))
+    base = os.path.splitext(os.path.basename(filename))[0]
+    return os.path.join(AUDIO_DIR, base + ".json")
+
+
+def write_manifest():
+    """Rebuild generated_audio/library.json from individual .json metadata files."""
+    items = []
+    for fname in os.listdir(AUDIO_DIR):
+        if not fname.endswith(".json") or fname == "library.json":
+            continue
+        try:
+            with open(os.path.join(AUDIO_DIR, fname)) as f:
+                meta = json.load(f)
+            if os.path.exists(os.path.join(AUDIO_DIR, meta["filename"])):
+                items.append(meta)
+        except Exception:
+            pass
+    items.sort(key=lambda x: x.get("created_at", 0), reverse=True)
+    with open(os.path.join(AUDIO_DIR, "library.json"), "w") as f:
+        json.dump(items, f)
 
 
 def split_into_chunks(text: str, max_chars: int = 500) -> list[str]:
@@ -123,6 +142,8 @@ def generate_audio_job(job_id: str, text: str, voice: str, speed: float, title: 
         }
         with open(meta_path(filename), "w") as f:
             json.dump(meta, f)
+
+        write_manifest()
 
         with _jobs_lock:
             _jobs[job_id]["status"] = "done"
@@ -256,6 +277,7 @@ def audio_convert_mp3(filename):
             json.dump(meta, f)
 
     os.remove(wav_path)
+    write_manifest()
     return jsonify({"filename": mp3_filename})
 
 
@@ -271,6 +293,7 @@ def audio_delete(filename):
             deleted.append(p)
     if not deleted:
         return jsonify({"error": "File not found"}), 404
+    write_manifest()
     return jsonify({"deleted": filename})
 
 
@@ -291,6 +314,19 @@ def sounds_serve(filename):
     return send_file(filepath, mimetype="audio/mpeg")
 
 
+@app.route("/generated_audio/<path:filename>")
+def generated_audio_serve(filename):
+    filename = os.path.basename(filename)
+    filepath = os.path.join(AUDIO_DIR, filename)
+    if not os.path.exists(filepath):
+        return jsonify({"error": "File not found"}), 404
+    if filename.endswith(".json"):
+        return send_file(filepath, mimetype="application/json")
+    mimetype = "audio/mpeg" if filename.endswith(".mp3") else "audio/wav"
+    return send_file(filepath, mimetype=mimetype)
+
+
 if __name__ == "__main__":
+    write_manifest()
     print("Starting Read for Sleep on http://127.0.0.1:5050")
     app.run(host="127.0.0.1", port=5050, debug=False)

@@ -10,8 +10,11 @@ venv/
 .venv/
 env/
 
-# Generated audio output
-generated_audio/
+# Generated audio — WAVs and per-file sidecar JSONs stay local
+# MP3s and library.json are committed for GitHub Pages static serving
+generated_audio/*.wav
+generated_audio/*.json
+!generated_audio/library.json
 
 # macOS
 .DS_Store
