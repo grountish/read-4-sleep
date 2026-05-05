@@ -913,21 +913,21 @@
 
     // ── Ambient mixer ──────────────────────────────────────────────────────────────
     const ambientTracks = {};
-    // No Web Audio API — use native <audio>.volume directly so iOS keeps playing on screen lock.
-    // Web Audio API (createMediaElementSource) suspends on iOS lock screen and can't be revived.
+    let audioCtx = null;
+
+    function getCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
 
     async function loadSounds() {
       const container = document.getElementById("soundRows");
       let sounds;
       try {
-        const url = serverOnline ? `${apiBase}/api/sounds` : `${staticBase}/api/sounds`;
-        // Fallback: build list from known sounds folder
         if (serverOnline) {
           const r = await fetch(`${apiBase}/api/sounds`);
           sounds = await r.json();
         } else {
-          // On GitHub Pages we can't list a directory, so fetch a known sounds manifest or
-          // hardcode the list based on what's in the repo
           const r = await fetch(`${staticBase}/sounds/index.json`).catch(() => null);
           if (r && r.ok) {
             sounds = await r.json();
@@ -945,28 +945,26 @@
 
       container.innerHTML = "";
       const urlParams = new URLSearchParams(location.search);
-      // Determine if any sound param is present in the URL
       const hasPresetParams = sounds.some(s => urlParams.has(s.name));
       let anyPreset = false;
 
       sounds.forEach(s => {
         const { label, icon } = soundMeta(s.name);
         const presetVal = urlParams.get(s.name);
-        // When preset URL is used, sounds not mentioned default to 0 (silent)
         const initVol = presetVal !== null
           ? Math.min(1, Math.max(0, parseFloat(presetVal) / 100))
-          : hasPresetParams ? 0 : 0.1;
+          : hasPresetParams ? 0 : 0.3;
         if (presetVal !== null) anyPreset = true;
 
         const row = document.createElement("div");
         row.className = "sound-row";
         row.id = `srow-${s.filename}`;
         row.innerHTML = `
-        <span class="sound-icon">${icon}</span>
-        <span class="sound-name">${escHtml(label)}</span>
-        <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="${initVol}" disabled />
-        <span class="sound-vol-val" id="vol-${s.filename}">${Math.round(initVol * 100)}%</span>
-      `;
+          <span class="sound-icon">${icon}</span>
+          <span class="sound-name">${escHtml(label)}</span>
+          <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="${initVol}" disabled />
+          <span class="sound-vol-val" id="vol-${s.filename}">${Math.round(initVol * 100)}%</span>
+        `;
         row.querySelector(".sound-vol").addEventListener("input", e => onVolumeChange(s.filename, e.target.value));
         container.appendChild(row);
 
@@ -976,21 +974,13 @@
         const audio = new Audio(soundUrl);
         audio.loop = true;
         audio.preload = "none";
-        ambientTracks[s.filename] = { audio, initVol };
-        // Re-apply volume on canplay — preload:none can reset volume when the browser first fetches the file
-        audio.addEventListener("canplay", () => {
-          audio.volume = ambientTracks[s.filename]?.initVol ?? 0.1;
-        });
+        ambientTracks[s.filename] = { audio, gainNode: null, sourceNode: null, initVol };
       });
 
       if (anyPreset) {
-        // Pre-check the toggle visually. Defer actual play until first user tap
-        // because iOS blocks audio.play() without a user gesture.
         const toggle = document.getElementById("mixerEnabled");
         toggle.checked = true;
         const startOnGesture = () => {
-          document.removeEventListener("touchstart", startOnGesture);
-          document.removeEventListener("mousedown", startOnGesture);
           if (toggle.checked) onMixerToggle();
         };
         document.addEventListener("touchstart", startOnGesture, { once: true });
@@ -1000,16 +990,23 @@
 
     function onMixerToggle() {
       const enabled = document.getElementById("mixerEnabled").checked;
+      const ctx = getCtx();
+
+      if (enabled) ctx.resume();
 
       Object.entries(ambientTracks).forEach(([filename, track]) => {
-        const row = document.getElementById(`srow-${filename}`);
+        const row    = document.getElementById(`srow-${filename}`);
         const slider = row?.querySelector(".sound-vol");
         if (enabled) {
-          const vol = slider ? parseFloat(slider.value) : (track.initVol ?? 0.1);
-          // Set volume before and after play — preload:none delays media load so
-          // the volume assigned before play can be reset when the browser fetches the file.
-          track.audio.volume = vol;
-          track.audio.play().then(() => { track.audio.volume = vol; }).catch(() => { });
+          if (!track.sourceNode) {
+            track.gainNode   = ctx.createGain();
+            track.sourceNode = ctx.createMediaElementSource(track.audio);
+            track.sourceNode.connect(track.gainNode);
+            track.gainNode.connect(ctx.destination);
+          }
+          const vol = slider ? parseFloat(slider.value) : track.initVol;
+          track.gainNode.gain.value = vol;
+          track.audio.play().catch(() => {});
           row?.classList.add("active");
           if (slider) slider.disabled = false;
         } else {
@@ -1023,7 +1020,8 @@
     function onVolumeChange(filename, value) {
       const track = ambientTracks[filename];
       const vol = parseFloat(value);
-      if (track) { track.audio.volume = vol; track.initVol = vol; }
+      if (track?.gainNode) track.gainNode.gain.value = vol;
+      if (track) track.initVol = vol;
       const label = document.getElementById(`vol-${filename}`);
       if (label) label.textContent = Math.round(vol * 100) + "%";
     }
