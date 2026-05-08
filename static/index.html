@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Read for Sleep</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     :root {
       --bg: #0d1117;
@@ -23,6 +24,18 @@
       margin: 0;
       padding: 0;
     }
+
+    [data-lucide] { display: inline-block; vertical-align: middle; }
+    .moon [data-lucide] { width: 2.5rem; height: 2.5rem; color: var(--accent); }
+    .sp-art [data-lucide] { width: 1.5rem; height: 1.5rem; color: var(--muted); }
+    .sp-btn [data-lucide] { width: 22px; height: 22px; }
+    .sp-btn.primary [data-lucide] { width: 20px; height: 20px; }
+    .lib-play [data-lucide] { width: 16px; height: 16px; }
+    .lib-del [data-lucide], .lib-dl [data-lucide] { width: 14px; height: 14px; }
+    .btn [data-lucide] { width: 18px; height: 18px; }
+    .mixer-header h2 [data-lucide] { width: 16px; height: 16px; }
+    .library-card h2 [data-lucide] { width: 16px; height: 16px; }
+    .download-btn [data-lucide] { width: 14px; height: 14px; }
 
     body {
       background: var(--bg);
@@ -339,6 +352,7 @@
       background: none; border: none; cursor: pointer;
       color: var(--text);
       display: flex; align-items: center; justify-content: center;
+      gap: 0.2rem;
       padding: 0; transition: color 0.15s, transform 0.1s;
     }
     .sp-btn:hover { color: #fff; }
@@ -348,6 +362,7 @@
       background: #fff; border-radius: 50%; color: #000;
     }
     .sp-btn.primary:hover { background: #e0e0e0; color: #000; }
+    .skip-label { font-size: 0.65rem; font-weight: 700; line-height: 1; }
 
     .sp-footer {
       display: flex;
@@ -456,6 +471,19 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      cursor: text;
+    }
+    .lib-title:hover { color: var(--accent); }
+    .lib-title-input {
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      padding: 0.1rem 0.35rem;
+      width: 100%;
+      outline: none;
     }
 
     .lib-meta {
@@ -579,9 +607,10 @@
     }
 
     .sound-row {
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 0.45rem 0.85rem;
+      align-items: start;
       opacity: 0.4;
       transition: opacity 0.2s;
     }
@@ -595,27 +624,54 @@
       flex-shrink: 0;
       width: 1.5rem;
       text-align: center;
+      grid-row: 1 / span 2;
+      margin-top: 0.15rem;
     }
 
     .sound-name {
       font-size: 0.85rem;
       color: var(--text);
-      min-width: 90px;
-      flex-shrink: 0;
+      min-width: 0;
     }
 
-    .sound-vol {
+    .sound-controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem 0.85rem;
+    }
+
+    .sound-control {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.45rem;
+      min-width: 0;
+    }
+
+    .sound-control-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .sound-vol,
+    .sound-pitch {
       flex: 1;
       accent-color: var(--accent);
       cursor: pointer;
       height: 4px;
+      width: 100%;
     }
 
-    .sound-vol:disabled {
+    .sound-vol:disabled,
+    .sound-pitch:disabled {
       cursor: default;
     }
 
-    .sound-vol-val {
+    .sound-vol-val,
+    .sound-pitch-val {
       font-size: 0.78rem;
       color: var(--muted);
       min-width: 2.8rem;
@@ -630,14 +686,72 @@
       .lib-actions {
         flex-direction: column;
       }
+
+      .sound-controls {
+        grid-template-columns: 1fr;
+      }
     }
+
+    /* Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop.visible { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.75rem 1.5rem 1.25rem;
+      max-width: 380px;
+      width: calc(100% - 2rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .modal-msg {
+      font-size: 0.95rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.65rem;
+    }
+    .modal-btn {
+      padding: 0.5rem 1.1rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .modal-btn:hover { opacity: 0.85; }
+    .modal-btn.cancel { background: var(--border); color: var(--text); }
+    .modal-btn.confirm { background: var(--danger); color: #fff; }
+    .modal-btn.ok { background: var(--accent); color: #fff; }
   </style>
 </head>
 
 <body>
 
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-msg" id="modalMsg"></div>
+      <div class="modal-actions" id="modalActions"></div>
+    </div>
+  </div>
+
   <header>
-    <span class="moon">🌙</span>
+    <span class="moon"><i data-lucide="moon"></i></span>
     <h1>Read for Sleep</h1>
     <p>Paste any text — get a calm audio to drift off to</p>
   </header>
@@ -668,7 +782,7 @@
     </div>
 
     <button class="btn btn-primary" id="generateBtn" onclick="startGeneration()">
-      ✨ Generate Sleep Audio
+      <i data-lucide="sparkles"></i> Generate Sleep Audio
     </button>
 
     <div class="progress-wrap" id="progressWrap">
@@ -691,7 +805,7 @@
 
     <div class="sp-player">
       <div class="sp-info">
-        <div class="sp-art">🌙</div>
+        <div class="sp-art"><i data-lucide="moon"></i></div>
         <div class="sp-text">
           <div class="sp-title" id="spTitle">—</div>
           <div class="sp-meta"  id="spMeta"></div>
@@ -706,26 +820,20 @@
 
       <div class="sp-controls">
         <button class="sp-btn" onclick="seekRel(-15)" title="−15s">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M11.99 5V1l-5 5 5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6h-2c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
-            <text x="7.5" y="15.5" font-size="5.5" font-family="sans-serif" font-weight="bold" fill="currentColor">15</text>
-          </svg>
+          <i data-lucide="rotate-ccw"></i>
+          <span class="skip-label">15</span>
         </button>
         <button class="sp-btn primary" id="spPlayPause" onclick="togglePlay()">
-          <svg id="spPlayIcon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M8 5v14l11-7z"/>
-          </svg>
+          <i data-lucide="play" id="spPlayIcon"></i>
         </button>
         <button class="sp-btn" onclick="seekRel(15)" title="+15s">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12.01 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/>
-            <text x="7.5" y="15.5" font-size="5.5" font-family="sans-serif" font-weight="bold" fill="currentColor">15</text>
-          </svg>
+          <i data-lucide="rotate-cw"></i>
+          <span class="skip-label">15</span>
         </button>
       </div>
 
       <div class="sp-footer">
-        <a class="download-btn" id="downloadLink" download>⬇ Download</a>
+        <a class="download-btn" id="downloadLink" download><i data-lucide="download"></i> Download</a>
       </div>
     </div>
   </div>
@@ -735,7 +843,7 @@
   <!-- Ambient mixer -->
   <div class="card" id="mixerCard">
     <div class="mixer-header">
-      <h2>🌿 Ambient sounds</h2>
+      <h2><i data-lucide="wind"></i> Ambient sounds</h2>
       <label class="mixer-toggle" title="Enable ambient sounds">
         <input type="checkbox" id="mixerEnabled" onchange="onMixerToggle()" />
         <span class="mixer-toggle-track"></span>
@@ -749,13 +857,54 @@
 
   <!-- Library -->
   <div class="card library-card" id="libraryCard">
-    <h2>📚 Previous recordings</h2>
+    <h2><i data-lucide="library"></i> Previous recordings</h2>
     <div id="libraryList">
       <p class="library-empty">No recordings yet.</p>
     </div>
   </div>
 
   <script>
+    // ── Modal helpers ─────────────────────────────────────────────────────────────
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalMsg      = document.getElementById("modalMsg");
+    const modalActions  = document.getElementById("modalActions");
+
+    function showAlert(msg) {
+      return new Promise(resolve => {
+        modalMsg.textContent = msg;
+        modalActions.innerHTML = "";
+        const ok = document.createElement("button");
+        ok.className = "modal-btn ok";
+        ok.textContent = "OK";
+        ok.onclick = () => { modalBackdrop.classList.remove("visible"); resolve(); };
+        modalActions.appendChild(ok);
+        modalBackdrop.classList.add("visible");
+        ok.focus();
+      });
+    }
+
+    function showConfirm(msg) {
+      return new Promise(resolve => {
+        modalMsg.textContent = msg;
+        modalActions.innerHTML = "";
+        const cancel = document.createElement("button");
+        cancel.className = "modal-btn cancel";
+        cancel.textContent = "Cancel";
+        cancel.onclick = () => { modalBackdrop.classList.remove("visible"); resolve(false); };
+        const confirm = document.createElement("button");
+        confirm.className = "modal-btn confirm";
+        confirm.textContent = "Delete";
+        confirm.onclick = () => { modalBackdrop.classList.remove("visible"); resolve(true); };
+        modalActions.append(cancel, confirm);
+        modalBackdrop.classList.add("visible");
+        confirm.focus();
+      });
+    }
+
+    modalBackdrop.addEventListener("click", e => {
+      if (e.target === modalBackdrop) modalBackdrop.classList.remove("visible");
+    });
+
     const textInput = document.getElementById("textInput");
     const wordCount = document.getElementById("wordCount");
     const charCount = document.getElementById("charCount");
@@ -780,8 +929,10 @@
     let pollTimer = null;
     let spSeeking = false;
 
-    const PLAY_PATH  = "M8 5v14l11-7z";
-    const PAUSE_PATH = "M6 19h4V5H6v14zm8-14v14h4V5h-4z";
+    function setIcon(el, name) {
+      el.setAttribute("data-lucide", name);
+      lucide.createIcons({ nodes: [el] });
+    }
 
     function fmtTime(s) {
       if (!isFinite(s)) return "0:00";
@@ -798,11 +949,11 @@
       spScrubber.max = Math.floor(audioPlayer.duration);
       document.getElementById("spDuration").textContent = fmtTime(audioPlayer.duration);
     });
-    audioPlayer.addEventListener("play",  () => spPlayIcon.querySelector("path").setAttribute("d", PAUSE_PATH));
-    audioPlayer.addEventListener("pause", () => spPlayIcon.querySelector("path").setAttribute("d", PLAY_PATH));
+    audioPlayer.addEventListener("play",  () => setIcon(spPlayIcon, "pause"));
+    audioPlayer.addEventListener("pause", () => setIcon(spPlayIcon, "play"));
     audioPlayer.addEventListener("ended", () => {
-      spPlayIcon.querySelector("path").setAttribute("d", PLAY_PATH);
-      document.querySelectorAll(".lib-play").forEach(b => b.textContent = "▶");
+      setIcon(spPlayIcon, "play");
+      document.querySelectorAll(".lib-play i").forEach(i => setIcon(i, "play"));
     });
 
     spScrubber.addEventListener("mousedown",  () => spSeeking = true);
@@ -998,19 +1149,25 @@
             row.className = "lib-item";
             row.dataset.filename = item.filename;
             row.innerHTML = `
-            <button class="lib-play" title="Play" onclick="playLibItem('${audioUrl}', this)">▶</button>
+            <button class="lib-play" title="Play" onclick="playLibItem('${audioUrl}', this)">
+              <i data-lucide="play"></i>
+            </button>
             <div class="lib-info">
-              <div class="lib-title">${escHtml(item.title)}</div>
+              <div class="lib-title" title="Double-click to rename">${escHtml(item.title)}</div>
               <div class="lib-meta">${formatDuration(item.duration)} · ${escHtml(item.voice)} · ${date} · <strong>${isWav ? "WAV" : "MP3"}</strong></div>
             </div>
             <div class="lib-actions">
-              ${isWav ? `<button class="lib-dl lib-mp3" title="Convert to MP3 320kbps" onclick="convertToMp3('${item.filename}', this)">MP3</button>` : ""}
-              <a class="lib-dl" href="${audioUrl}" download="${downloadName}" title="Download">⬇</a>
-              <button class="lib-del" title="Delete" onclick="deleteItem('${item.filename}', this)">🗑</button>
+              ${isWav ? `<button class="lib-dl lib-mp3" title="Convert to MP3 320kbps" onclick="convertToMp3('${item.filename}', this)"><i data-lucide="file-audio"></i> MP3</button>` : ""}
+              <a class="lib-dl" href="${audioUrl}" download="${downloadName}" title="Download"><i data-lucide="download"></i></a>
+              <button class="lib-del" title="Delete" onclick="deleteItem('${item.filename}', this)"><i data-lucide="trash-2"></i></button>
             </div>
           `;
+            row.querySelector(".lib-title").addEventListener("dblclick", function () {
+              renameItem(item.filename, this);
+            });
             libraryList.appendChild(row);
           });
+          lucide.createIcons();
         });
     }
 
@@ -1022,42 +1179,83 @@
     }
 
     function playLibItem(url, btn) {
-      document.querySelectorAll(".lib-play").forEach(b => b.textContent = "▶");
+      document.querySelectorAll(".lib-play i").forEach(i => setIcon(i, "play"));
       const row   = btn.closest(".lib-item");
       const title = row?.querySelector(".lib-title")?.textContent || "Recording";
       const fname = row?.dataset.filename || "sleep-audio";
       loadPlayer(url, title, fname);
       playerCard.classList.add("visible");
       audioPlayer.play().catch(() => {});
-      btn.textContent = "■";
-      audioPlayer.addEventListener("ended", () => { btn.textContent = "▶"; }, { once: true });
+      setIcon(btn.querySelector("i"), "square");
+      audioPlayer.addEventListener("ended", () => { setIcon(btn.querySelector("i"), "play"); }, { once: true });
     }
 
     function convertToMp3(filename, btn) {
       btn.disabled = true;
-      btn.textContent = "…";
+      btn.innerHTML = "…";
       fetch(`/api/audio/${filename}/convert-mp3`, { method: "POST" })
         .then(r => r.json())
         .then(data => {
-          if (data.error) { alert(data.error); btn.disabled = false; btn.textContent = "MP3"; return; }
+          if (data.error) { showAlert(data.error); btn.disabled = false; btn.textContent = "MP3"; return; }
           loadLibrary();
         })
-        .catch(() => { btn.disabled = false; btn.textContent = "MP3"; alert("Conversion failed."); });
+        .catch(() => { btn.disabled = false; btn.textContent = "MP3"; showAlert("Conversion failed."); });
     }
 
-    function deleteItem(filename, btn) {
-      if (!confirm("Delete this recording?")) return;
+    async function deleteItem(filename, btn) {
+      const ok = await showConfirm("Delete this recording?");
+      if (!ok) return;
       btn.disabled = true;
       fetch(`/api/audio/${filename}`, { method: "DELETE" })
         .then(r => r.json())
         .then(data => {
-          if (data.error) { alert(data.error); btn.disabled = false; return; }
+          if (data.error) { showAlert(data.error); btn.disabled = false; return; }
           const row = btn.closest(".lib-item");
           row.style.transition = "opacity 0.3s";
           row.style.opacity = "0";
           setTimeout(() => { row.remove(); checkEmpty(); }, 300);
         })
-        .catch(() => { btn.disabled = false; alert("Delete failed."); });
+        .catch(() => { btn.disabled = false; showAlert("Delete failed."); });
+    }
+
+    function renameItem(filename, titleEl) {
+      const current = titleEl.textContent;
+      const input = document.createElement("input");
+      input.className = "lib-title-input";
+      input.value = current;
+      titleEl.replaceWith(input);
+      input.focus();
+      input.select();
+
+      function commit() {
+        const newTitle = input.value.trim();
+        if (!newTitle || newTitle === current) {
+          input.replaceWith(titleEl);
+          return;
+        }
+        fetch(`/api/audio/${filename}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: newTitle }),
+        })
+          .then(r => r.json())
+          .then(data => {
+            if (data.error) { showAlert(data.error); input.replaceWith(titleEl); return; }
+            titleEl.textContent = data.title;
+            input.replaceWith(titleEl);
+            const row = titleEl.closest(".lib-item");
+            if (row?.dataset.filename === filename) {
+              document.getElementById("spTitle").textContent = data.title;
+            }
+          })
+          .catch(() => { input.replaceWith(titleEl); showAlert("Rename failed."); });
+      }
+
+      input.addEventListener("blur", commit);
+      input.addEventListener("keydown", e => {
+        if (e.key === "Enter") { input.blur(); }
+        if (e.key === "Escape") { input.value = current; input.blur(); }
+      });
     }
 
     function checkEmpty() {
@@ -1072,10 +1270,31 @@
 
     // Load library on page open
     loadLibrary();
+    lucide.createIcons();
 
     // ── Ambient mixer ────────────────────────────────────────────────────────────
 
     const ambientTracks = {};
+
+    function formatPitchLabel(value) {
+      const semitones = parseFloat(value);
+      const display = Number.isInteger(semitones)
+        ? String(semitones)
+        : semitones.toFixed(1).replace(/\.0$/, "");
+      return `${semitones > 0 ? "+" : ""}${display} st`;
+    }
+
+    function applyPitchToAudio(audio, semitones) {
+      const rate = Math.pow(2, semitones / 12);
+      audio.defaultPlaybackRate = rate;
+      audio.playbackRate = rate;
+    }
+
+    function disablePitchPreservation(audio) {
+      if ("preservesPitch" in audio) audio.preservesPitch = false;
+      if ("webkitPreservesPitch" in audio) audio.webkitPreservesPitch = false;
+      if ("mozPreservesPitch" in audio) audio.mozPreservesPitch = false;
+    }
 
     // Friendly display names and icons derived from filename
     function soundMeta(name) {
@@ -1106,11 +1325,24 @@
             row.innerHTML = `
             <span class="sound-icon">${icon}</span>
             <span class="sound-name">${escHtml(label)}</span>
-            <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="0.1"
-              disabled
-              oninput="onVolumeChange('${s.filename}', this.value)"
-              title="Volume" />
-            <span class="sound-vol-val" id="vol-${s.filename}">30%</span>
+            <div class="sound-controls">
+              <label class="sound-control">
+                <span class="sound-control-label">Vol</span>
+                <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="0.1"
+                  disabled
+                  oninput="onVolumeChange('${s.filename}', this.value)"
+                  title="Volume" />
+                <span class="sound-vol-val" id="vol-${s.filename}">10%</span>
+              </label>
+              <label class="sound-control">
+                <span class="sound-control-label">Pitch</span>
+                <input type="range" class="sound-pitch" min="-6" max="6" step="0.5" value="0"
+                  disabled
+                  oninput="onPitchChange('${s.filename}', this.value)"
+                  title="Pitch" />
+                <span class="sound-pitch-val" id="pitch-${s.filename}">0 st</span>
+              </label>
+            </div>
           `;
             container.appendChild(row);
 
@@ -1118,7 +1350,9 @@
             audio.loop = true;
             audio.preload = "none";
             audio.volume = 0.1;
-            ambientTracks[s.filename] = { audio };
+            disablePitchPreservation(audio);
+            applyPitchToAudio(audio, 0);
+            ambientTracks[s.filename] = { audio, pitch: 0 };
           });
         });
     }
@@ -1126,17 +1360,21 @@
     function onMixerToggle() {
       const enabled = document.getElementById("mixerEnabled").checked;
       Object.entries(ambientTracks).forEach(([filename, track]) => {
-        const row    = document.getElementById(`srow-${filename}`);
-        const slider = row ? row.querySelector(".sound-vol") : null;
+        const row = document.getElementById(`srow-${filename}`);
+        const volumeSlider = row ? row.querySelector(".sound-vol") : null;
+        const pitchSlider = row ? row.querySelector(".sound-pitch") : null;
         if (enabled) {
-          if (slider) track.audio.volume = parseFloat(slider.value);
+          if (volumeSlider) track.audio.volume = parseFloat(volumeSlider.value);
+          if (pitchSlider) applyPitchToAudio(track.audio, parseFloat(pitchSlider.value));
           track.audio.play().catch(() => {});
           if (row) row.classList.add("active");
-          if (slider) slider.disabled = false;
+          if (volumeSlider) volumeSlider.disabled = false;
+          if (pitchSlider) pitchSlider.disabled = false;
         } else {
           track.audio.pause();
           if (row) row.classList.remove("active");
-          if (slider) slider.disabled = true;
+          if (volumeSlider) volumeSlider.disabled = true;
+          if (pitchSlider) pitchSlider.disabled = true;
         }
       });
     }
@@ -1146,6 +1384,17 @@
       if (track) track.audio.volume = parseFloat(value);
       const label = document.getElementById(`vol-${filename}`);
       if (label) label.textContent = Math.round(value * 100) + "%";
+    }
+
+    function onPitchChange(filename, value) {
+      const track = ambientTracks[filename];
+      if (track) {
+        const semitones = parseFloat(value);
+        track.pitch = semitones;
+        applyPitchToAudio(track.audio, semitones);
+      }
+      const label = document.getElementById(`pitch-${filename}`);
+      if (label) label.textContent = formatPitchLabel(value);
     }
 
     loadSounds();

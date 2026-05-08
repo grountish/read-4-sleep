@@ -281,20 +281,38 @@ def audio_convert_mp3(filename):
     return jsonify({"filename": mp3_filename})
 
 
-@app.route("/api/audio/<filename>", methods=["DELETE"])
-def audio_delete(filename):
+@app.route("/api/audio/<filename>", methods=["DELETE", "PATCH"])
+def audio_modify(filename):
     filename = os.path.basename(filename)
-    wav = os.path.join(AUDIO_DIR, filename)
-    meta = meta_path(filename)
-    deleted = []
-    for p in (wav, meta):
-        if os.path.exists(p):
-            os.remove(p)
-            deleted.append(p)
-    if not deleted:
-        return jsonify({"error": "File not found"}), 404
-    write_manifest()
-    return jsonify({"deleted": filename})
+
+    if request.method == "DELETE":
+        wav = os.path.join(AUDIO_DIR, filename)
+        meta = meta_path(filename)
+        deleted = []
+        for p in (wav, meta):
+            if os.path.exists(p):
+                os.remove(p)
+                deleted.append(p)
+        if not deleted:
+            return jsonify({"error": "File not found"}), 404
+        write_manifest()
+        return jsonify({"deleted": filename})
+
+    if request.method == "PATCH":
+        data = request.get_json(force=True)
+        new_title = (data.get("title") or "").strip()
+        if not new_title:
+            return jsonify({"error": "Title cannot be empty"}), 400
+        meta = meta_path(filename)
+        if not os.path.exists(meta):
+            return jsonify({"error": "Metadata not found"}), 404
+        with open(meta) as f:
+            m = json.load(f)
+        m["title"] = new_title
+        with open(meta, "w") as f:
+            json.dump(m, f)
+        write_manifest()
+        return jsonify({"title": new_title})
 
 
 @app.route("/api/sounds")

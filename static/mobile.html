@@ -405,9 +405,10 @@
     }
 
     .sound-row {
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 0.5rem 0.85rem;
+      align-items: start;
       opacity: 0.4;
       transition: opacity 0.2s;
     }
@@ -421,30 +422,63 @@
       width: 1.6rem;
       text-align: center;
       flex-shrink: 0;
+      grid-row: 1 / span 2;
+      margin-top: 0.15rem;
     }
 
     .sound-name {
       font-size: 0.85rem;
       color: var(--text);
-      min-width: 80px;
-      flex-shrink: 0;
+      min-width: 0;
     }
 
-    .sound-vol {
+    .sound-controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.55rem 0.8rem;
+    }
+
+    .sound-control {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.45rem;
+      min-width: 0;
+    }
+
+    .sound-control-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .sound-vol,
+    .sound-pitch {
       flex: 1;
       accent-color: var(--accent);
       cursor: pointer;
+      width: 100%;
     }
 
-    .sound-vol:disabled {
+    .sound-vol:disabled,
+    .sound-pitch:disabled {
       cursor: default;
     }
 
-    .sound-vol-val {
+    .sound-vol-val,
+    .sound-pitch-val {
       font-size: 0.75rem;
       color: var(--muted);
       min-width: 2.8rem;
       text-align: right;
+    }
+
+    @media (max-width: 420px) {
+      .sound-controls {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* Generate (local-only) */
@@ -920,6 +954,32 @@
       return audioCtx;
     }
 
+    function formatPitchLabel(value) {
+      const semitones = parseFloat(value);
+      const display = Number.isInteger(semitones)
+        ? String(semitones)
+        : semitones.toFixed(1).replace(/\.0$/, "");
+      return `${semitones > 0 ? "+" : ""}${display} st`;
+    }
+
+    function applyPitchToAudio(audio, semitones) {
+      const rate = Math.pow(2, semitones / 12);
+      audio.defaultPlaybackRate = rate;
+      audio.playbackRate = rate;
+    }
+
+    function disablePitchPreservation(audio) {
+      if ("preservesPitch" in audio) audio.preservesPitch = false;
+      if ("webkitPreservesPitch" in audio) audio.webkitPreservesPitch = false;
+      if ("mozPreservesPitch" in audio) audio.mozPreservesPitch = false;
+    }
+
+    function clampNumber(value, min, max, fallback) {
+      const parsed = parseFloat(value);
+      if (!Number.isFinite(parsed)) return fallback;
+      return Math.min(max, Math.max(min, parsed));
+    }
+
     async function loadSounds() {
       const container = document.getElementById("soundRows");
       let sounds;
@@ -945,16 +1005,21 @@
 
       container.innerHTML = "";
       const urlParams = new URLSearchParams(location.search);
-      const hasPresetParams = sounds.some(s => urlParams.has(s.name));
+      const hasPresetParams = sounds.some(s => urlParams.has(s.name) || urlParams.has(`${s.name}_pitch`));
       let anyPreset = false;
 
       sounds.forEach(s => {
         const { label, icon } = soundMeta(s.name);
         const presetVal = urlParams.get(s.name);
+        const presetPitch = urlParams.get(`${s.name}_pitch`);
         const initVol = presetVal !== null
-          ? Math.min(1, Math.max(0, parseFloat(presetVal) / 100))
+          ? clampNumber(parseFloat(presetVal) / 100, 0, 1, 0.3)
           : hasPresetParams ? 0 : 0.3;
+        const initPitch = presetPitch !== null
+          ? clampNumber(presetPitch, -6, 6, 0)
+          : 0;
         if (presetVal !== null) anyPreset = true;
+        if (presetPitch !== null) anyPreset = true;
 
         const row = document.createElement("div");
         row.className = "sound-row";
@@ -962,10 +1027,21 @@
         row.innerHTML = `
           <span class="sound-icon">${icon}</span>
           <span class="sound-name">${escHtml(label)}</span>
-          <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="${initVol}" disabled />
-          <span class="sound-vol-val" id="vol-${s.filename}">${Math.round(initVol * 100)}%</span>
+          <div class="sound-controls">
+            <label class="sound-control">
+              <span class="sound-control-label">Vol</span>
+              <input type="range" class="sound-vol" min="0" max="1" step="0.01" value="${initVol}" disabled />
+              <span class="sound-vol-val" id="vol-${s.filename}">${Math.round(initVol * 100)}%</span>
+            </label>
+            <label class="sound-control">
+              <span class="sound-control-label">Pitch</span>
+              <input type="range" class="sound-pitch" min="-6" max="6" step="0.5" value="${initPitch}" disabled />
+              <span class="sound-pitch-val" id="pitch-${s.filename}">${formatPitchLabel(initPitch)}</span>
+            </label>
+          </div>
         `;
         row.querySelector(".sound-vol").addEventListener("input", e => onVolumeChange(s.filename, e.target.value));
+        row.querySelector(".sound-pitch").addEventListener("input", e => onPitchChange(s.filename, e.target.value));
         container.appendChild(row);
 
         const soundUrl = serverOnline
@@ -974,7 +1050,9 @@
         const audio = new Audio(soundUrl);
         audio.loop = true;
         audio.preload = "none";
-        ambientTracks[s.filename] = { audio, gainNode: null, sourceNode: null, initVol };
+        disablePitchPreservation(audio);
+        applyPitchToAudio(audio, initPitch);
+        ambientTracks[s.filename] = { audio, gainNode: null, sourceNode: null, initVol, initPitch };
       });
 
       if (anyPreset) {
@@ -995,8 +1073,9 @@
       if (enabled) ctx.resume();
 
       Object.entries(ambientTracks).forEach(([filename, track]) => {
-        const row    = document.getElementById(`srow-${filename}`);
-        const slider = row?.querySelector(".sound-vol");
+        const row = document.getElementById(`srow-${filename}`);
+        const volumeSlider = row?.querySelector(".sound-vol");
+        const pitchSlider = row?.querySelector(".sound-pitch");
         if (enabled) {
           if (!track.sourceNode) {
             track.gainNode   = ctx.createGain();
@@ -1004,15 +1083,19 @@
             track.sourceNode.connect(track.gainNode);
             track.gainNode.connect(ctx.destination);
           }
-          const vol = slider ? parseFloat(slider.value) : track.initVol;
+          const vol = volumeSlider ? parseFloat(volumeSlider.value) : track.initVol;
+          const pitch = pitchSlider ? parseFloat(pitchSlider.value) : track.initPitch;
           track.gainNode.gain.value = vol;
+          applyPitchToAudio(track.audio, pitch);
           track.audio.play().catch(() => {});
           row?.classList.add("active");
-          if (slider) slider.disabled = false;
+          if (volumeSlider) volumeSlider.disabled = false;
+          if (pitchSlider) pitchSlider.disabled = false;
         } else {
           track.audio.pause();
           row?.classList.remove("active");
-          if (slider) slider.disabled = true;
+          if (volumeSlider) volumeSlider.disabled = true;
+          if (pitchSlider) pitchSlider.disabled = true;
         }
       });
     }
@@ -1026,15 +1109,32 @@
       if (label) label.textContent = Math.round(vol * 100) + "%";
     }
 
+    function onPitchChange(filename, value) {
+      const track = ambientTracks[filename];
+      const semitones = parseFloat(value);
+      if (track) {
+        track.initPitch = semitones;
+        applyPitchToAudio(track.audio, semitones);
+      }
+      const label = document.getElementById(`pitch-${filename}`);
+      if (label) label.textContent = formatPitchLabel(semitones);
+    }
+
     // ── Preset links ──────────────────────────────────────────────────────────────
     function copyPresetLink() {
       const p = new URLSearchParams();
       Object.entries(ambientTracks).forEach(([filename, _]) => {
         const name = filename.replace(/\.[^.]+$/, ""); // strip extension → "rain1"
-        const slider = document.querySelector(`#srow-${filename} .sound-vol`);
-        if (slider) {
-          const pct = Math.round(parseFloat(slider.value) * 100);
+        const row = document.getElementById(`srow-${filename}`);
+        const volumeSlider = row?.querySelector(".sound-vol");
+        const pitchSlider = row?.querySelector(".sound-pitch");
+        if (volumeSlider) {
+          const pct = Math.round(parseFloat(volumeSlider.value) * 100);
           if (pct > 0) p.set(name, pct);
+        }
+        if (pitchSlider) {
+          const pitch = parseFloat(pitchSlider.value);
+          if (Math.abs(pitch) > 0.01) p.set(`${name}_pitch`, pitch.toString());
         }
       });
       const url = `${location.origin}${location.pathname}${p.toString() ? "?" + p.toString() : ""}`;
