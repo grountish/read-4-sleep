@@ -165,10 +165,10 @@ def index():
 @app.route("/api/voices")
 def voices():
     voice_list = [
-        {"id": "af_heart",   "name": "Heart (calm female)",      "lang": "English",  "recommended": True},
+        {"id": "af_heart",   "name": "Heart (calm female)",      "lang": "English",  "recommended": False},
         {"id": "af_sky",     "name": "Sky (soft female)",         "lang": "English",  "recommended": False},
         {"id": "af_bella",   "name": "Bella (gentle female)",     "lang": "English",  "recommended": False},
-        {"id": "af_nicole",  "name": "Nicole (airy female)",      "lang": "English",  "recommended": False},
+        {"id": "af_nicole",  "name": "Nicole (airy female)",      "lang": "English",  "recommended": True},
         {"id": "am_fenrir",  "name": "Fenrir (deep male)",        "lang": "English",  "recommended": False},
         {"id": "am_michael", "name": "Michael (warm male)",       "lang": "English",  "recommended": False},
         {"id": "bf_emma",    "name": "Emma (British female)",     "lang": "English",  "recommended": False},
@@ -184,7 +184,7 @@ def voices():
 def generate():
     data = request.get_json()
     text = (data.get("text") or "").strip()
-    voice = data.get("voice", "af_heart")
+    voice = data.get("voice", "af_nicole")
     speed = float(data.get("speed", 0.8))
 
     if not text:

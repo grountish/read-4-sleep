@@ -8,739 +8,338 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     :root {
-      --bg: #0d1117;
-      --surface: #161b22;
-      --border: #2a3444;
-      --accent: #7c8cf8;
-      --accent-h: #9ba8ff;
-      --text: #cdd1e0;
-      --muted: #6e7b94;
-      --danger: #f87171;
-      --success: #6ee7b7;
+      --bg: #08070C;
+      --panel: #110F18;
+      --panel-2: #181620;
+      --field: #1F1C2C;
+      --panel-hi: #221F30;
+      --ink: #E4E1F0;
+      --line: #000004;
+      --accent: #5E5286;
+      --accent-h: #6B5F93;
+      --accent-2: #45547E;
+      --hi: #F58A2E;
+      --hot: #FF4D6D;
+      --muted: #8A84A6;
+      --danger: #FF4D6D;
+      --ok: #2DBF87;
+      --shadow: 6px 6px 0 #000003;
+      --shadow-sm: 3px 3px 0 #000003;
+      --mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    [data-lucide] { display: inline-block; vertical-align: middle; }
-    .moon [data-lucide] { width: 2.5rem; height: 2.5rem; color: var(--accent); }
-    .sp-art [data-lucide] { width: 1.5rem; height: 1.5rem; color: var(--muted); }
-    .sp-btn [data-lucide] { width: 22px; height: 22px; }
-    .sp-btn.primary [data-lucide] { width: 20px; height: 20px; }
-    .lib-play [data-lucide] { width: 16px; height: 16px; }
-    .lib-del [data-lucide], .lib-dl [data-lucide] { width: 14px; height: 14px; }
-    .btn [data-lucide] { width: 18px; height: 18px; }
-    .mixer-header h2 [data-lucide] { width: 16px; height: 16px; }
-    .library-card h2 [data-lucide] { width: 16px; height: 16px; }
-    .download-btn [data-lucide] { width: 14px; height: 14px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
 
     body {
       background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      min-height: 100vh;
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.4;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem 4rem;
+      padding: 14px;
+      gap: 14px;
     }
 
-    header {
-      text-align: center;
-      margin-bottom: 2.5rem;
+    /* Night sky / starfield */
+    .sky {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+      background:
+        radial-gradient(120% 80% at 82% -10%, #261c40 0%, transparent 58%),
+        radial-gradient(110% 75% at -5% 108%, #16203f 0%, transparent 55%);
     }
+    .sky::before, .sky::after { content: ""; position: absolute; inset: -50%; background-repeat: repeat; }
+    .sky::before {
+      background-image:
+        radial-gradient(1.5px 1.5px at 40px 60px, #ffffff, transparent),
+        radial-gradient(1px 1px at 130px 100px, #cdd6ff, transparent),
+        radial-gradient(1.5px 1.5px at 220px 180px, #ffffff, transparent),
+        radial-gradient(1px 1px at 300px 40px, #b8a6ff, transparent),
+        radial-gradient(1px 1px at 90px 250px, #ffd9a8, transparent),
+        radial-gradient(1.5px 1.5px at 370px 300px, #ffffff, transparent),
+        radial-gradient(1px 1px at 470px 150px, #a8c5ff, transparent),
+        radial-gradient(1.5px 1.5px at 540px 320px, #ff9d7a, transparent);
+      background-size: 600px 420px;
+      animation: twinkle 6s ease-in-out infinite;
+    }
+    .sky::after {
+      background-image:
+        radial-gradient(1px 1px at 60px 120px, #ffffff, transparent),
+        radial-gradient(1px 1px at 200px 80px, #c9d2ff, transparent),
+        radial-gradient(1px 1px at 320px 220px, #ffffff, transparent),
+        radial-gradient(1px 1px at 420px 60px, #d8b4ff, transparent),
+        radial-gradient(1px 1px at 150px 300px, #ffffff, transparent),
+        radial-gradient(1.5px 1.5px at 500px 260px, #ffc59a, transparent);
+      background-size: 520px 380px;
+      opacity: 0.7;
+      animation: twinkle 9s ease-in-out infinite reverse;
+    }
+    @keyframes twinkle { 0%, 100% { opacity: 0.9; } 50% { opacity: 0.4; } }
 
-    header h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
+    .topbar, .grid { position: relative; z-index: 1; }
+
+    /* Icons */
+    [data-lucide] { display: inline-block; vertical-align: middle; }
+    .moon [data-lucide] { width: 1.5rem; height: 1.5rem; color: #1A1222; }
+    .sp-art [data-lucide] { width: 1.4rem; height: 1.4rem; color: #1A1222; }
+    .sp-btn [data-lucide] { width: 20px; height: 20px; }
+    .sp-btn.primary [data-lucide] { width: 18px; height: 18px; }
+    .lib-play [data-lucide] { width: 15px; height: 15px; }
+    .lib-del [data-lucide], .lib-dl [data-lucide] { width: 14px; height: 14px; }
+    .btn [data-lucide] { width: 18px; height: 18px; }
+    .panel-head h2 [data-lucide], .mixer-header h2 [data-lucide], .player-card h2 [data-lucide] { width: 15px; height: 15px; }
+    .download-btn [data-lucide] { width: 14px; height: 14px; }
+
+    /* Top bar */
+    .topbar {
+      flex: 0 0 auto;
+      background: linear-gradient(110deg, var(--accent) 0%, var(--accent-2) 100%);
       color: #fff;
+      border: 3px solid var(--line);
+      box-shadow: var(--shadow-sm);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-
-    header p {
-      color: var(--muted);
-      margin-top: 0.4rem;
-      font-size: 0.95rem;
-    }
-
     .moon {
-      font-size: 2.5rem;
-      display: block;
-      margin-bottom: 0.5rem;
+      background: var(--hi);
+      color: var(--ink);
+      border: 3px solid var(--line);
+      width: 42px; height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
     }
+    .topbar h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: #fff; }
+    .topbar p { font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.92; margin-top: 2px; }
 
-    .card {
-      width: 100%;
-      max-width: 740px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.75rem;
-      margin-bottom: 1.5rem;
+    /* Grid */
+    .grid {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(300px, 1.05fr) minmax(280px, 0.95fr) minmax(300px, 1.1fr);
+      gap: 14px;
     }
+    .col { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+
+    /* Panel */
+    .panel {
+      background: var(--panel);
+      border: 3px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .panel-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-bottom: 10px; padding-bottom: 8px;
+      border-bottom: 3px solid var(--line); flex: 0 0 auto;
+    }
+    .panel-head h2 { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
 
     label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--muted);
-      margin-bottom: 0.5rem;
+      display: block; font-size: 0.66rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--ink); margin-bottom: 5px;
     }
 
+    /* Textarea */
     textarea {
-      width: 100%;
-      height: 280px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-size: 0.95rem;
-      line-height: 1.65;
-      padding: 1rem;
-      resize: vertical;
-      outline: none;
-      transition: border-color 0.2s;
+      flex: 1 1 auto; min-height: 0; width: 100%;
+      background: var(--panel-2);
+      border: 3px solid var(--line);
+      color: var(--ink);
+      font-family: var(--mono); font-size: 0.9rem; line-height: 1.6;
+      padding: 10px; resize: none; outline: none; overflow: auto; border-radius: 0;
     }
+    textarea:focus { background: var(--field); box-shadow: inset 0 0 0 2px var(--accent); }
+    textarea::placeholder { color: var(--muted); }
 
-    textarea:focus {
-      border-color: var(--accent);
-    }
-
-    textarea::placeholder {
-      color: var(--muted);
-    }
-
-    /* Stats row under textarea */
     .text-stats {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 0.4rem;
-      font-size: 0.78rem;
-      color: var(--muted);
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 8px; font-size: 0.7rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.03em; flex: 0 0 auto;
     }
+    .est-duration { font-weight: 800; color: #1A1222; background: var(--hi); padding: 1px 6px; border: 2px solid var(--line); }
+    .est-duration.hidden { opacity: 0; }
 
-    .est-duration {
-      font-weight: 600;
-      color: var(--accent);
-      transition: opacity 0.2s;
-    }
-
-    .est-duration.hidden {
-      opacity: 0;
-    }
-
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-top: 1.25rem;
-    }
-
-    .control-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; flex: 0 0 auto; }
+    .control-group { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 
     select {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 0.9rem;
-      padding: 0.55rem 0.75rem;
-      outline: none;
-      cursor: pointer;
-      transition: border-color 0.2s;
+      background: var(--panel-2); border: 3px solid var(--line); color: var(--ink);
+      font-family: var(--mono); font-size: 0.82rem; padding: 7px 8px; outline: none; cursor: pointer; border-radius: 0;
     }
+    select:focus { background: var(--field); }
 
-    select:focus {
-      border-color: var(--accent);
-    }
+    .speed-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    input[type="range"] { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); cursor: pointer; height: 6px; }
+    .speed-val { flex: 0 0 auto; font-size: 0.78rem; font-weight: 800; color: #1A1222; background: var(--hi); border: 2px solid var(--line); padding: 1px 6px; min-width: 3.1rem; text-align: center; white-space: nowrap; }
 
-    .speed-row {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    input[type="range"] {
-      flex: 1;
-      accent-color: var(--accent);
-      cursor: pointer;
-    }
-
-    .speed-val {
-      font-size: 0.85rem;
-      color: var(--accent);
-      min-width: 2.5rem;
-      text-align: right;
-    }
-
+    /* Buttons */
     .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      width: 100%;
-      padding: 0.85rem 1.5rem;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      margin-top: 1.5rem;
+      display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+      padding: 11px 16px; border: 3px solid var(--line); font-family: var(--mono);
+      font-size: 0.9rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+      cursor: pointer; border-radius: 0; box-shadow: var(--shadow-sm);
+      transition: transform 0.08s, box-shadow 0.08s; margin-top: 12px; flex: 0 0 auto;
     }
-
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-    }
-
-    .btn-primary:hover {
-      background: var(--accent-h);
-    }
-
-    .btn-primary:disabled {
-      background: var(--border);
-      color: var(--muted);
-      cursor: not-allowed;
-      transform: none;
-    }
+    .btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-primary:disabled { background: var(--panel-2); color: var(--muted); cursor: not-allowed; box-shadow: none; transform: none; }
 
     /* Progress */
-    .progress-wrap {
-      display: none;
-      flex-direction: column;
-      gap: 0.6rem;
-      margin-top: 1.25rem;
-    }
+    .progress-wrap { display: none; flex-direction: column; gap: 6px; margin-top: 12px; flex: 0 0 auto; }
+    .progress-wrap.visible { display: flex; }
+    .progress-bar-bg { background: var(--panel-2); height: 14px; overflow: hidden; border: 3px solid var(--line); }
+    .progress-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.4s ease; }
+    .progress-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; display: flex; justify-content: space-between; }
+    .status-dot { display: inline-block; width: 8px; height: 8px; background: var(--accent); animation: pulse 1.2s infinite; margin-right: 5px; vertical-align: middle; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 
-    .progress-wrap.visible {
-      display: flex;
-    }
-
-    .progress-bar-bg {
-      background: var(--bg);
-      border-radius: 99px;
-      height: 6px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      background: var(--accent);
-      border-radius: 99px;
-      transition: width 0.4s ease;
-      width: 0%;
-    }
-
-    .progress-label {
-      font-size: 0.82rem;
-      color: var(--muted);
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .status-dot {
-      display: inline-block;
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: pulse 1.2s infinite;
-      margin-right: 0.35rem;
-      vertical-align: middle;
-    }
-
-    @keyframes pulse {
-
-      0%,
-      100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.3;
-      }
-    }
-
-    /* Current player */
-    .player-card { display: none; }
-    .player-card.visible { display: block; }
-
-    .player-card h2 {
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--muted);
-      margin-bottom: 1.25rem;
-    }
-
-    .sp-player {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .sp-info {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .sp-art {
-      width: 52px; height: 52px;
-      border-radius: 8px;
-      background: var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem;
-      flex-shrink: 0;
-    }
-
-    .sp-text { flex: 1; min-width: 0; }
-    .sp-title { font-size: 0.95rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sp-meta  { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
-
-    .sp-scrubber-row {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .sp-time { font-size: 0.72rem; color: var(--muted); min-width: 3rem; }
-    .sp-time.right { text-align: right; }
-
-    .sp-scrubber {
-      flex: 1;
-      -webkit-appearance: none;
-      appearance: none;
-      height: 4px;
-      border-radius: 99px;
-      background: var(--border);
-      accent-color: #fff;
-      cursor: pointer;
-    }
-    .sp-scrubber::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 13px; height: 13px;
-      border-radius: 50%;
-      background: #fff;
-      cursor: pointer;
-    }
-
-    .sp-controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1.75rem;
-    }
-
-    .sp-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--text);
-      display: flex; align-items: center; justify-content: center;
-      gap: 0.2rem;
-      padding: 0; transition: color 0.15s, transform 0.1s;
-    }
-    .sp-btn:hover { color: #fff; }
-    .sp-btn:active { transform: scale(0.92); }
-    .sp-btn.primary {
-      width: 48px; height: 48px;
-      background: #fff; border-radius: 50%; color: #000;
-    }
-    .sp-btn.primary:hover { background: #e0e0e0; color: #000; }
-    .skip-label { font-size: 0.65rem; font-weight: 700; line-height: 1; }
-
-    .sp-footer {
-      display: flex;
-      justify-content: flex-end;
-    }
-
-    .download-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.45rem 1rem;
-      background: transparent;
-      border: 1px solid var(--accent);
-      border-radius: 8px;
-      color: var(--accent);
-      font-size: 0.82rem;
-      font-weight: 600;
-      text-decoration: none;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .download-btn:hover { background: rgba(124,140,248,0.12); }
-
-    /* Error */
     .error-msg {
-      display: none;
-      color: var(--danger);
-      font-size: 0.88rem;
-      margin-top: 0.75rem;
-      padding: 0.65rem 0.9rem;
-      background: rgba(248, 113, 113, 0.08);
-      border: 1px solid rgba(248, 113, 113, 0.25);
-      border-radius: 8px;
+      display: none; color: #fff; font-size: 0.76rem; margin-top: 10px; padding: 8px 10px;
+      background: var(--danger); border: 3px solid var(--line); text-transform: uppercase; letter-spacing: 0.03em; flex: 0 0 auto;
     }
+    .error-msg.visible { display: block; }
 
-    .error-msg.visible {
-      display: block;
+    /* Player */
+    .player-card { display: none; flex: 0 0 auto; }
+    .player-card.visible { display: flex; }
+    .player-card h2 {
+      font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 10px; padding-bottom: 8px; border-bottom: 3px solid var(--line); flex: 0 0 auto;
     }
+    .sp-player { display: flex; flex-direction: column; gap: 12px; }
+    .sp-info { display: flex; align-items: center; gap: 12px; }
+    .sp-art {
+      width: 48px; height: 48px; border: 3px solid var(--line); background: var(--hi);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .sp-text { flex: 1; min-width: 0; }
+    .sp-title { font-size: 0.92rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sp-meta { font-size: 0.68rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; }
+    .sp-scrubber-row { display: flex; align-items: center; gap: 8px; }
+    .sp-time { font-size: 0.66rem; font-weight: 700; color: var(--ink); min-width: 2.6rem; }
+    .sp-time.right { text-align: right; }
+    .sp-scrubber {
+      flex: 1; -webkit-appearance: none; appearance: none; height: 8px;
+      border: 2px solid var(--line); background: var(--panel-2); cursor: pointer;
+    }
+    .sp-scrubber::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--accent); border: 2px solid var(--line); cursor: pointer; }
+    .sp-controls { display: flex; align-items: center; justify-content: center; gap: 18px; }
+    .sp-btn {
+      background: none; border: none; cursor: pointer; color: var(--ink);
+      display: flex; align-items: center; justify-content: center; gap: 2px; padding: 0; transition: transform 0.08s;
+    }
+    .sp-btn:active { transform: scale(0.9); }
+    .sp-btn.primary { width: 46px; height: 46px; background: var(--accent); border: 3px solid var(--line); color: #fff; box-shadow: var(--shadow-sm); }
+    .sp-btn.primary:active { transform: translate(2px, 2px); box-shadow: none; }
+    .skip-label { font-size: 0.6rem; font-weight: 800; line-height: 1; }
+    .sp-footer { display: flex; justify-content: flex-end; }
+    .download-btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+      background: var(--hi); border: 3px solid var(--line); color: var(--ink);
+      font-size: 0.72rem; font-weight: 800; text-transform: uppercase; text-decoration: none;
+      cursor: pointer; box-shadow: var(--shadow-sm);
+    }
+    .download-btn:active { transform: translate(2px, 2px); box-shadow: none; }
 
-    .tip {
-      font-size: 0.8rem;
-      color: var(--muted);
-      text-align: center;
-      margin-top: 0.5rem;
+    /* Mixer */
+    .mixer-card { flex: 1 1 auto; min-height: 0; }
+    .mixer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px; padding-bottom: 8px; border-bottom: 3px solid var(--line); flex: 0 0 auto;
     }
+    .mixer-header h2 { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; }
+    .mixer-toggle { position: relative; width: 46px; height: 24px; flex-shrink: 0; }
+    .mixer-toggle input { opacity: 0; width: 0; height: 0; }
+    .mixer-toggle-track { position: absolute; inset: 0; background: var(--panel-2); border: 3px solid var(--line); cursor: pointer; transition: background 0.15s; }
+    .mixer-toggle input:checked + .mixer-toggle-track { background: var(--accent); }
+    .mixer-toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; background: var(--ink); transition: transform 0.15s; pointer-events: none; }
+    .mixer-toggle input:checked ~ .mixer-toggle-thumb { transform: translateX(22px); background: #fff; }
+    .sound-rows { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1 1 auto; min-height: 0; padding-right: 4px; }
+    .sound-row {
+      display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-items: start;
+      opacity: 0.45; transition: opacity 0.2s, background 0.2s; border: 2px solid var(--line); background: var(--panel-2); padding: 7px 9px;
+    }
+    .sound-row.active { opacity: 1; background: var(--panel-hi); border-color: var(--accent); }
+    .sound-icon { font-size: 1.05rem; width: 1.5rem; text-align: center; grid-row: 1 / span 2; margin-top: 2px; }
+    .sound-name { font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; min-width: 0; }
+    .sound-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 10px; }
+    .sound-control { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 5px; min-width: 0; }
+    .sound-control-label { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+    .sound-vol, .sound-pitch { flex: 1; accent-color: var(--accent); cursor: pointer; height: 4px; width: 100%; }
+    .sound-vol:disabled, .sound-pitch:disabled { cursor: default; }
+    .sound-vol-val, .sound-pitch-val { font-size: 0.66rem; font-weight: 700; color: var(--ink); min-width: 2.6rem; text-align: right; }
 
     /* Library */
-    .library-card h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 1rem;
-    }
-
-    .library-empty {
-      font-size: 0.88rem;
-      color: var(--muted);
-      text-align: center;
-      padding: 1rem 0;
-    }
-
-    .lib-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .lib-item:last-child {
-      border-bottom: none;
-    }
-
+    .library-card { min-height: 0; }
+    .lib-scroll { overflow-y: auto; flex: 1 1 auto; min-height: 0; padding-right: 4px; }
+    .library-empty { font-size: 0.76rem; color: var(--muted); text-align: center; padding: 16px 0; text-transform: uppercase; letter-spacing: 0.04em; }
+    .lib-item { display: flex; align-items: center; gap: 10px; padding: 9px; border: 2px solid var(--line); background: var(--panel-2); margin-bottom: 8px; transition: background 0.15s; }
+    .lib-item:hover { background: var(--panel-hi); }
     .lib-play {
-      flex-shrink: 0;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--accent);
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-      transition: background 0.15s, transform 0.1s;
-      color: #fff;
+      flex-shrink: 0; width: 34px; height: 34px; background: var(--accent); border: 3px solid var(--line);
+      cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff;
+      box-shadow: var(--shadow-sm); transition: transform 0.08s, box-shadow 0.08s;
     }
-
-    .lib-play:hover {
-      background: var(--accent-h);
-    }
-
-    .lib-play:active {
-      transform: scale(0.93);
-    }
-
-    .lib-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .lib-title {
-      font-size: 0.9rem;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      cursor: text;
-    }
+    .lib-play:hover { background: var(--accent-h); }
+    .lib-play:active { transform: translate(2px, 2px); box-shadow: none; }
+    .lib-info { flex: 1; min-width: 0; }
+    .lib-title { font-size: 0.84rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: text; }
     .lib-title:hover { color: var(--accent); }
-    .lib-title-input {
-      font-size: 0.9rem;
-      font-family: inherit;
-      color: var(--text);
-      background: var(--bg);
-      border: 1px solid var(--accent);
-      border-radius: 4px;
-      padding: 0.1rem 0.35rem;
-      width: 100%;
-      outline: none;
+    .lib-title-input { font-size: 0.84rem; font-family: var(--mono); color: var(--ink); background: var(--field); border: 2px solid var(--accent); padding: 2px 5px; width: 100%; outline: none; }
+    .lib-meta { font-size: 0.64rem; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.02em; }
+    .lib-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .lib-dl, .lib-del {
+      padding: 5px 7px; border: 2px solid var(--line); font-family: var(--mono); font-size: 0.7rem; font-weight: 700;
+      cursor: pointer; background: var(--panel); text-decoration: none; display: inline-flex; align-items: center; gap: 3px; color: var(--ink);
     }
-
-    .lib-meta {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 0.15rem;
-    }
-
-    .lib-actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-shrink: 0;
-    }
-
-    .lib-dl,
-    .lib-del {
-      padding: 0.3rem 0.6rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      font-size: 0.78rem;
-      cursor: pointer;
-      background: transparent;
-      transition: background 0.15s, border-color 0.15s;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .lib-dl {
-      color: var(--accent);
-      border-color: var(--accent);
-    }
-
-    .lib-dl:hover {
-      background: rgba(124, 140, 248, 0.1);
-    }
-
-    .lib-mp3 {
-      color: var(--success);
-      border-color: var(--success);
-    }
-
-    .lib-mp3:hover {
-      background: rgba(110, 231, 183, 0.1);
-    }
-
-    .lib-mp3:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .lib-del {
-      color: var(--danger);
-      border-color: var(--danger);
-    }
-
-    .lib-del:hover {
-      background: rgba(248, 113, 113, 0.1);
-    }
-
-    /* Ambient mixer */
-    .mixer-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
-
-    .mixer-header h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #fff;
-    }
-
-    .mixer-toggle {
-      position: relative;
-      width: 40px;
-      height: 22px;
-      flex-shrink: 0;
-    }
-
-    .mixer-toggle input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .mixer-toggle-track {
-      position: absolute;
-      inset: 0;
-      background: var(--border);
-      border-radius: 99px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .mixer-toggle input:checked+.mixer-toggle-track {
-      background: var(--accent);
-    }
-
-    .mixer-toggle-thumb {
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 16px;
-      height: 16px;
-      background: #fff;
-      border-radius: 50%;
-      transition: transform 0.2s;
-      pointer-events: none;
-    }
-
-    .mixer-toggle input:checked~.mixer-toggle-thumb {
-      transform: translateX(18px);
-    }
-
-    .sound-rows {
-      display: flex;
-      flex-direction: column;
-      gap: 0.65rem;
-    }
-
-    .sound-row {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 0.45rem 0.85rem;
-      align-items: start;
-      opacity: 0.4;
-      transition: opacity 0.2s;
-    }
-
-    .sound-row.active {
-      opacity: 1;
-    }
-
-    .sound-icon {
-      font-size: 1.2rem;
-      flex-shrink: 0;
-      width: 1.5rem;
-      text-align: center;
-      grid-row: 1 / span 2;
-      margin-top: 0.15rem;
-    }
-
-    .sound-name {
-      font-size: 0.85rem;
-      color: var(--text);
-      min-width: 0;
-    }
-
-    .sound-controls {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.5rem 0.85rem;
-    }
-
-    .sound-control {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 0.45rem;
-      min-width: 0;
-    }
-
-    .sound-control-label {
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .sound-vol,
-    .sound-pitch {
-      flex: 1;
-      accent-color: var(--accent);
-      cursor: pointer;
-      height: 4px;
-      width: 100%;
-    }
-
-    .sound-vol:disabled,
-    .sound-pitch:disabled {
-      cursor: default;
-    }
-
-    .sound-vol-val,
-    .sound-pitch-val {
-      font-size: 0.78rem;
-      color: var(--muted);
-      min-width: 2.8rem;
-      text-align: right;
-    }
-
-    @media (max-width: 520px) {
-      .controls {
-        grid-template-columns: 1fr;
-      }
-
-      .lib-actions {
-        flex-direction: column;
-      }
-
-      .sound-controls {
-        grid-template-columns: 1fr;
-      }
-    }
+    .lib-dl:hover { background: var(--accent); color: #fff; }
+    .lib-mp3 { background: var(--hi); color: #1A1222; }
+    .lib-mp3:hover { background: var(--ok); color: #fff; }
+    .lib-mp3:disabled { opacity: 0.5; cursor: not-allowed; }
+    .lib-del:hover { background: var(--danger); color: #fff; }
 
     /* Modal */
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-    }
+    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(11, 11, 12, 0.55); z-index: 100; align-items: center; justify-content: center; }
     .modal-backdrop.visible { display: flex; }
-    .modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.75rem 1.5rem 1.25rem;
-      max-width: 380px;
-      width: calc(100% - 2rem);
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .modal-msg {
-      font-size: 0.95rem;
-      color: var(--text);
-      line-height: 1.5;
-    }
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.65rem;
-    }
-    .modal-btn {
-      padding: 0.5rem 1.1rem;
-      border-radius: 8px;
-      border: none;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
-    .modal-btn:hover { opacity: 0.85; }
-    .modal-btn.cancel { background: var(--border); color: var(--text); }
+    .modal { background: var(--panel); border: 3px solid var(--line); box-shadow: var(--shadow); padding: 20px; max-width: 380px; width: calc(100% - 2rem); display: flex; flex-direction: column; gap: 14px; }
+    .modal-msg { font-size: 0.9rem; line-height: 1.5; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+    .modal-btn { padding: 8px 16px; border: 3px solid var(--line); font-family: var(--mono); font-size: 0.78rem; font-weight: 800; text-transform: uppercase; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.08s, box-shadow 0.08s; }
+    .modal-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+    .modal-btn.cancel { background: var(--panel-2); color: var(--ink); }
     .modal-btn.confirm { background: var(--danger); color: #fff; }
     .modal-btn.ok { background: var(--accent); color: #fff; }
+
+    /* Responsive: below this, let the page scroll and stack */
+    @media (max-width: 920px) {
+      body { height: auto; min-height: 100vh; overflow: auto; }
+      .grid { grid-template-columns: 1fr; }
+      .col { min-height: 0; }
+      textarea { flex: 0 0 auto; height: 220px; }
+      .mixer-card { flex: 0 0 auto; }
+      .sound-rows, .lib-scroll { max-height: 340px; }
+    }
+    @media (max-width: 520px) {
+      .controls { grid-template-columns: 1fr; }
+      .sound-controls { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 
 <body>
+
+  <div class="sky"></div>
 
   <!-- Modal -->
   <div class="modal-backdrop" id="modalBackdrop">
@@ -750,118 +349,124 @@
     </div>
   </div>
 
-  <header>
+  <header class="topbar">
     <span class="moon"><i data-lucide="moon"></i></span>
-    <h1>Read for Sleep</h1>
-    <p>Paste any text — get a calm audio to drift off to</p>
+    <div>
+      <h1>Read for Sleep</h1>
+      <p>Paste text — get calm audio to drift off to</p>
+    </div>
   </header>
 
-  <!-- Input card -->
-  <div class="card">
-    <label for="textInput">Your text</label>
-    <textarea id="textInput"
-      placeholder="Paste your article, story, meditation script, or anything you want read to you while falling asleep..."></textarea>
-    <div class="text-stats">
-      <span><span id="wordCount">0</span> words · <span id="charCount">0</span> / 200,000 chars</span>
-      <span class="est-duration hidden" id="estDuration"></span>
-    </div>
+  <main class="grid">
 
-    <div class="controls">
-      <div class="control-group">
-        <label for="voiceSelect">Voice</label>
-        <select id="voiceSelect"></select>
+    <!-- Column 1: input -->
+    <section class="panel panel-input">
+      <div class="panel-head"><h2><i data-lucide="type"></i> Text</h2></div>
+      <textarea id="textInput"
+        placeholder="Paste your article, story, meditation script, or anything you want read to you while falling asleep..."></textarea>
+      <div class="text-stats">
+        <span><span id="wordCount">0</span> words · <span id="charCount">0</span> / 200,000</span>
+        <span class="est-duration hidden" id="estDuration"></span>
       </div>
-      <div class="control-group">
-        <label>Speed <small style="text-transform:none;font-size:0.75rem;color:var(--muted)">(slower = more
-            relaxing)</small></label>
-        <div class="speed-row">
-          <input type="range" id="speedRange" min="0.5" max="1.2" step="0.05" value="0.8" />
-          <span class="speed-val" id="speedVal">0.8×</span>
+
+      <div class="controls">
+        <div class="control-group">
+          <label for="voiceSelect">Voice</label>
+          <select id="voiceSelect"></select>
         </div>
-      </div>
-    </div>
-
-    <button class="btn btn-primary" id="generateBtn" onclick="startGeneration()">
-      <i data-lucide="sparkles"></i> Generate Sleep Audio
-    </button>
-
-    <div class="progress-wrap" id="progressWrap">
-      <div class="progress-label">
-        <span><span class="status-dot" id="statusDot"></span><span id="statusText">Generating audio…</span></span>
-        <span id="progressPct">0%</span>
-      </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progressBar"></div>
-      </div>
-    </div>
-
-    <div class="error-msg" id="errorMsg"></div>
-  </div>
-
-  <!-- Current player -->
-  <div class="card player-card" id="playerCard">
-    <h2>Now playing</h2>
-    <audio id="audioPlayer"></audio>
-
-    <div class="sp-player">
-      <div class="sp-info">
-        <div class="sp-art"><i data-lucide="moon"></i></div>
-        <div class="sp-text">
-          <div class="sp-title" id="spTitle">—</div>
-          <div class="sp-meta"  id="spMeta"></div>
+        <div class="control-group">
+          <label>Speed</label>
+          <div class="speed-row">
+            <input type="range" id="speedRange" min="0.5" max="1.2" step="0.05" value="0.8" />
+            <span class="speed-val" id="speedVal">0.8×</span>
+          </div>
         </div>
       </div>
 
-      <div class="sp-scrubber-row">
-        <span class="sp-time" id="spCurrent">0:00</span>
-        <input type="range" class="sp-scrubber" id="spScrubber" min="0" value="0" step="1" />
-        <span class="sp-time right" id="spDuration">0:00</span>
+      <button class="btn btn-primary" id="generateBtn" onclick="startGeneration()">
+        <i data-lucide="sparkles"></i> Generate
+      </button>
+
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-label">
+          <span><span class="status-dot" id="statusDot"></span><span id="statusText">Generating audio…</span></span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
       </div>
 
-      <div class="sp-controls">
-        <button class="sp-btn" onclick="seekRel(-15)" title="−15s">
-          <i data-lucide="rotate-ccw"></i>
-          <span class="skip-label">15</span>
-        </button>
-        <button class="sp-btn primary" id="spPlayPause" onclick="togglePlay()">
-          <i data-lucide="play" id="spPlayIcon"></i>
-        </button>
-        <button class="sp-btn" onclick="seekRel(15)" title="+15s">
-          <i data-lucide="rotate-cw"></i>
-          <span class="skip-label">15</span>
-        </button>
+      <div class="error-msg" id="errorMsg"></div>
+    </section>
+
+    <!-- Column 2: player + mixer -->
+    <div class="col">
+
+      <section class="panel player-card" id="playerCard">
+        <h2>Now playing</h2>
+        <audio id="audioPlayer"></audio>
+
+        <div class="sp-player">
+          <div class="sp-info">
+            <div class="sp-art"><i data-lucide="moon"></i></div>
+            <div class="sp-text">
+              <div class="sp-title" id="spTitle">—</div>
+              <div class="sp-meta" id="spMeta"></div>
+            </div>
+          </div>
+
+          <div class="sp-scrubber-row">
+            <span class="sp-time" id="spCurrent">0:00</span>
+            <input type="range" class="sp-scrubber" id="spScrubber" min="0" value="0" step="1" />
+            <span class="sp-time right" id="spDuration">0:00</span>
+          </div>
+
+          <div class="sp-controls">
+            <button class="sp-btn" onclick="seekRel(-15)" title="−15s">
+              <i data-lucide="rotate-ccw"></i>
+              <span class="skip-label">15</span>
+            </button>
+            <button class="sp-btn primary" id="spPlayPause" onclick="togglePlay()">
+              <i data-lucide="play" id="spPlayIcon"></i>
+            </button>
+            <button class="sp-btn" onclick="seekRel(15)" title="+15s">
+              <i data-lucide="rotate-cw"></i>
+              <span class="skip-label">15</span>
+            </button>
+          </div>
+
+          <div class="sp-footer">
+            <a class="download-btn" id="downloadLink" download><i data-lucide="download"></i> Download</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel mixer-card" id="mixerCard">
+        <div class="mixer-header">
+          <h2><i data-lucide="wind"></i> Ambient</h2>
+          <label class="mixer-toggle" title="Enable ambient sounds">
+            <input type="checkbox" id="mixerEnabled" onchange="onMixerToggle()" />
+            <span class="mixer-toggle-track"></span>
+            <span class="mixer-toggle-thumb"></span>
+          </label>
+        </div>
+        <div class="sound-rows" id="soundRows">
+          <p class="library-empty">Loading sounds…</p>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Column 3: library -->
+    <section class="panel library-card" id="libraryCard">
+      <div class="panel-head"><h2><i data-lucide="library"></i> Library</h2></div>
+      <div class="lib-scroll" id="libraryList">
+        <p class="library-empty">No recordings yet.</p>
       </div>
+    </section>
 
-      <div class="sp-footer">
-        <a class="download-btn" id="downloadLink" download><i data-lucide="download"></i> Download</a>
-      </div>
-    </div>
-  </div>
-
-
-
-  <!-- Ambient mixer -->
-  <div class="card" id="mixerCard">
-    <div class="mixer-header">
-      <h2><i data-lucide="wind"></i> Ambient sounds</h2>
-      <label class="mixer-toggle" title="Enable ambient sounds">
-        <input type="checkbox" id="mixerEnabled" onchange="onMixerToggle()" />
-        <span class="mixer-toggle-track"></span>
-        <span class="mixer-toggle-thumb"></span>
-      </label>
-    </div>
-    <div class="sound-rows" id="soundRows">
-      <p class="library-empty">Loading sounds…</p>
-    </div>
-  </div>
-
-  <!-- Library -->
-  <div class="card library-card" id="libraryCard">
-    <h2><i data-lucide="library"></i> Previous recordings</h2>
-    <div id="libraryList">
-      <p class="library-empty">No recordings yet.</p>
-    </div>
-  </div>
+  </main>
 
   <script>
     // ── Modal helpers ─────────────────────────────────────────────────────────────
@@ -1098,7 +703,7 @@
               clearInterval(pollTimer);
               setProgress(100, "Done!");
               statusDot.style.animation = "none";
-              statusDot.style.background = "var(--success)";
+              statusDot.style.background = "var(--ok)";
 
               const audioUrl = `/api/audio/${job.filename}`;
               loadPlayer(audioUrl, "Your new recording", job.filename);

@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Bash(rtk ls *)",
+      "Bash(rtk grep *)"
     ]
   }
 }
