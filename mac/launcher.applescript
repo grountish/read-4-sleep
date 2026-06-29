@@ -11,7 +11,7 @@ on run
 
 	if code is not "200" then
 		-- Launch detached so it survives this script quitting
-		do shell script "cd " & quoted form of appDir & " && /usr/bin/nohup " & quoted form of pyBin & " app.py > /tmp/read-for-sleep.log 2>&1 &"
+		do shell script "cd " & quoted form of appDir & " && /usr/bin/nohup /usr/bin/arch -arm64 " & quoted form of pyBin & " app.py > /tmp/read-for-sleep.log 2>&1 &"
 
 		-- Wait for Flask to answer (up to ~30s; model loads lazily later)
 		repeat 60 times
