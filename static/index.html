@@ -1004,6 +1004,18 @@
 
     loadSounds();
   </script>
+  <script>
+    // Heartbeat: lets the server auto-shut-down when this tab closes.
+    // A brief gap (reload/navigation) is tolerated by the server's watchdog.
+    function ping() {
+      fetch('/api/ping', { method: 'POST', keepalive: true }).catch(() => {});
+    }
+    ping();
+    setInterval(ping, 5000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') ping();
+    });
+  </script>
 </body>
 
 </html>

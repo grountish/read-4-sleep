@@ -24,6 +24,22 @@ _pipeline_lock = threading.Lock()
 _jobs = {}
 _jobs_lock = threading.Lock()
 
+# Auto-shutdown watchdog: the browser heartbeats /api/ping; if pings stop
+# (tab closed), the server exits. Enabled by the macOS launcher via env var.
+_last_seen = time.time()
+_seen_browser = False
+IDLE_TIMEOUT = 12     # seconds without a heartbeat after the browser connected
+STARTUP_GRACE = 120   # seconds to wait for the first heartbeat
+
+
+def watchdog():
+    while True:
+        time.sleep(3)
+        idle = time.time() - _last_seen
+        limit = IDLE_TIMEOUT if _seen_browser else STARTUP_GRACE
+        if idle > limit:
+            os._exit(0)
+
 # Voice prefix → Kokoro lang_code
 VOICE_LANG = {
     "a": "a",  # American English  (af_*, am_*)
@@ -332,6 +348,14 @@ def sounds_serve(filename):
     return send_file(filepath, mimetype="audio/mpeg")
 
 
+@app.route("/api/ping", methods=["POST", "GET"])
+def ping():
+    global _last_seen, _seen_browser
+    _last_seen = time.time()
+    _seen_browser = True
+    return ("", 204)
+
+
 @app.route("/generated_audio/<path:filename>")
 def generated_audio_serve(filename):
     filename = os.path.basename(filename)
@@ -346,5 +370,8 @@ def generated_audio_serve(filename):
 
 if __name__ == "__main__":
     write_manifest()
+    if os.environ.get("RFS_AUTOCLOSE") == "1":
+        threading.Thread(target=watchdog, daemon=True).start()
+        print("Auto-shutdown enabled (closes when the browser tab closes)")
     print("Starting Read for Sleep on http://127.0.0.1:5050")
     app.run(host="127.0.0.1", port=5050, debug=False)
