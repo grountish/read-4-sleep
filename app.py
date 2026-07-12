@@ -3,6 +3,7 @@ import re
 import uuid
 import json
 import time
+import shutil
 import threading
 import subprocess
 import numpy as np
@@ -271,6 +272,19 @@ def audio_get(filename):
     return send_file(filepath, mimetype=mimetype, as_attachment=False)
 
 
+def _find_ffmpeg():
+    # When started from the macOS launcher (AppleScript `do shell script`), PATH
+    # is minimal (/usr/bin:/bin:...) and Homebrew's ffmpeg isn't on it, so search
+    # the usual install locations by absolute path as well.
+    found = shutil.which("ffmpeg")
+    if found:
+        return found
+    for cand in ("/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"):
+        if os.path.exists(cand):
+            return cand
+    return None
+
+
 @app.route("/api/audio/<filename>/convert-mp3", methods=["POST"])
 def audio_convert_mp3(filename):
     filename = os.path.basename(filename)
@@ -281,19 +295,26 @@ def audio_convert_mp3(filename):
     if not os.path.exists(wav_path):
         return jsonify({"error": "File not found"}), 404
 
+    ffmpeg = _find_ffmpeg()
+    if not ffmpeg:
+        return jsonify({"error": "ffmpeg not found. Install it: brew install ffmpeg"}), 500
+
     mp3_filename = filename.replace(".wav", ".mp3")
     mp3_path = os.path.join(AUDIO_DIR, mp3_filename)
 
     try:
         subprocess.run(
-            ["ffmpeg", "-y", "-i", wav_path,
+            [ffmpeg, "-y", "-i", wav_path,
              "-codec:a", "libmp3lame", "-b:a", "320k", mp3_path],
             check=True,
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
         )
+    except FileNotFoundError:
+        return jsonify({"error": "ffmpeg not found. Install it: brew install ffmpeg"}), 500
     except subprocess.CalledProcessError as e:
-        return jsonify({"error": f"ffmpeg failed: {e}"}), 500
+        detail = (e.stderr or b"").decode("utf-8", "replace").strip().splitlines()[-1:] or [str(e)]
+        return jsonify({"error": f"ffmpeg failed: {detail[0]}"}), 500
 
     # Update metadata to point to the MP3
     json_path = os.path.join(AUDIO_DIR, filename.replace(".wav", ".json"))

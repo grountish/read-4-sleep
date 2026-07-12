@@ -11,7 +11,7 @@ on run
 
 	if code is not "200" then
 		-- Launch detached so it survives this script quitting
-		do shell script "cd " & quoted form of appDir & " && RFS_AUTOCLOSE=1 /usr/bin/nohup /usr/bin/arch -arm64 " & quoted form of pyBin & " app.py > /tmp/read-for-sleep.log 2>&1 &"
+		do shell script "cd " & quoted form of appDir & " && PATH=/opt/homebrew/bin:/usr/local/bin:$PATH RFS_AUTOCLOSE=1 /usr/bin/nohup /usr/bin/arch -arm64 " & quoted form of pyBin & " app.py > /tmp/read-for-sleep.log 2>&1 &"
 
 		-- Wait for Flask to answer (imports take a few seconds; model loads later)
 		repeat 120 times
