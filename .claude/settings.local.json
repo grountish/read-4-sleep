@@ -4,7 +4,10 @@
       "WebSearch",
       "Bash(rtk ls *)",
       "Bash(rtk grep *)",
-      "Bash(rtk read *)"
+      "Bash(rtk read *)",
+      "Bash(rtk ps *)",
+      "Bash(lsof -nP -iTCP:5050)",
+      "Bash(rtk find *)"
     ]
   }
 }
