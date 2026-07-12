@@ -25,17 +25,29 @@ _jobs = {}
 _jobs_lock = threading.Lock()
 
 # Auto-shutdown watchdog: the browser heartbeats /api/ping; if pings stop
-# (tab closed), the server exits. Enabled by the macOS launcher via env var.
+# entirely (tab really gone), the server exits. Enabled by the launcher via env.
+#
+# Background/hidden tabs throttle their timers (Chrome drops to ~1/min, then
+# freezes), so a short idle timeout kills the server mid-playback. The idle net
+# is therefore generous; prompt shutdown on a genuine tab close is handled by
+# the /api/bye beacon (navigator.sendBeacon on pagehide) instead.
 _last_seen = time.time()
 _seen_browser = False
-IDLE_TIMEOUT = 12     # seconds without a heartbeat after the browser connected
-STARTUP_GRACE = 120   # seconds to wait for the first heartbeat
+_bye_at = None
+IDLE_TIMEOUT = 300    # seconds without ANY heartbeat => assume the tab is gone
+STARTUP_GRACE = 300   # seconds to wait for the first heartbeat
+BYE_GRACE = 8         # after a page-close beacon, wait for a reconnect
+                      # (reload / navigation / another tab) before exiting
 
 
 def watchdog():
     while True:
-        time.sleep(3)
-        idle = time.time() - _last_seen
+        time.sleep(2)
+        now = time.time()
+        # Explicit "tab closed" beacon: exit unless a live ping reconnects.
+        if _bye_at is not None and now - _bye_at > BYE_GRACE:
+            os._exit(0)
+        idle = now - _last_seen
         limit = IDLE_TIMEOUT if _seen_browser else STARTUP_GRACE
         if idle > limit:
             os._exit(0)
@@ -350,9 +362,20 @@ def sounds_serve(filename):
 
 @app.route("/api/ping", methods=["POST", "GET"])
 def ping():
-    global _last_seen, _seen_browser
+    global _last_seen, _seen_browser, _bye_at
     _last_seen = time.time()
     _seen_browser = True
+    _bye_at = None          # a live heartbeat cancels any pending shutdown
+    return ("", 204)
+
+
+@app.route("/api/bye", methods=["POST", "GET"])
+def bye():
+    # Sent via navigator.sendBeacon on pagehide when the tab is actually torn
+    # down. A reload/navigation fires it too, so the watchdog waits BYE_GRACE
+    # for a fresh ping to cancel it before shutting the server down.
+    global _bye_at
+    _bye_at = time.time()
     return ("", 204)
 
 

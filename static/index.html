@@ -1011,9 +1011,16 @@
       fetch('/api/ping', { method: 'POST', keepalive: true }).catch(() => {});
     }
     ping();
-    setInterval(ping, 5000);
+    setInterval(ping, 4000);
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') ping();
+    });
+    // Tell the server the instant this tab is torn down so it can shut down
+    // promptly. e.persisted === true means the page is going into bfcache (it
+    // may come back), so only signal a real close. A reload/navigation reloads
+    // and pings again within a few seconds, cancelling the shutdown.
+    window.addEventListener('pagehide', (e) => {
+      if (!e.persisted) navigator.sendBeacon('/api/bye');
     });
   </script>
 </body>

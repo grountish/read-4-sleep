@@ -13,13 +13,18 @@ on run
 		-- Launch detached so it survives this script quitting
 		do shell script "cd " & quoted form of appDir & " && RFS_AUTOCLOSE=1 /usr/bin/nohup /usr/bin/arch -arm64 " & quoted form of pyBin & " app.py > /tmp/read-for-sleep.log 2>&1 &"
 
-		-- Wait for Flask to answer (up to ~30s; model loads lazily later)
-		repeat 60 times
+		-- Wait for Flask to answer (imports take a few seconds; model loads later)
+		repeat 120 times
 			delay 0.5
 			set code to do shell script "/usr/bin/curl -s -o /dev/null -w '%{http_code}' " & serverURL & " || true"
 			if code is "200" then exit repeat
 		end repeat
 	end if
 
-	do shell script "/usr/bin/open " & serverURL
+	-- Only open a real, answering server — never a blank "can't connect" window.
+	if code is "200" then
+		do shell script "/usr/bin/open " & serverURL
+	else
+		display alert "Read for Sleep" message "The server did not start. See /tmp/read-for-sleep.log for details."
+	end if
 end run
