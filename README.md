@@ -42,6 +42,12 @@ venv/bin/python app.py
 
 Then open [http://127.0.0.1:5050](http://127.0.0.1:5050) in your browser.
 
+## macOS app
+
+`mac/build.sh` compiles `mac/launcher.applescript` into `~/Applications/ReadForSleep.app` (pass another folder as the first argument to install elsewhere). Double-clicking the app starts the server if it is not already running, waits until it answers, and opens the browser. Server output goes to `/tmp/read-for-sleep.log`, and the server exits on its own a while after the browser tab is closed.
+
+Rebuild after editing the launcher or moving the project: the project path is hard-coded in the script.
+
 ## Usage
 
 1. Paste any text (up to 200,000 characters) into the text area.
