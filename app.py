@@ -305,7 +305,7 @@ def audio_convert_mp3(filename):
     try:
         subprocess.run(
             [ffmpeg, "-y", "-i", wav_path,
-             "-codec:a", "libmp3lame", "-b:a", "320k", mp3_path],
+             "-codec:a", "libmp3lame", "-b:a", "128k", mp3_path],
             check=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
